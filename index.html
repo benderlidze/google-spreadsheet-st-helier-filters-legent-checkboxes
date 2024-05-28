@@ -15,16 +15,37 @@
             margin: 0;
             padding: 0;
         }
+
+        #legend {
+            background: #fff;
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            padding: 10px;
+            margin: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            border-radius: 5px;
+            z-index: 11;
+        }
     </style>
 </head>
 
 <body>
+
+    <div id="legend"></div>
     <div id="map"></div>
+
     <script>(g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })
             ({ key: "AIzaSyB0VQowwwAOpBGGIvJ6vgNjhPq07B-kLiw", v: "weekly" });</script>
     <script>
 
         let map;
+        const legendDiv = document.getElementById("legend");
+        const allMarkers = [];
+
         async function initMap() {
             // Request needed libraries.
             const { Map } = await google.maps.importLibrary("maps");
@@ -39,45 +60,93 @@
             d3.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?output=csv")
                 .then(data => {
                     console.log(data)
+                    const defibrillators = data.map(pin => {
+                        const beachFlagImg = document.createElement("img");
+                        beachFlagImg.src = "icons/aed-icon.png";
 
-                    data.forEach(pin => {
                         const marker = new AdvancedMarkerElement({
                             map,
+                            content: beachFlagImg,
                             position: { lat: +pin.latitude, lng: +pin.longitude },
+                            title: pin.address,
                         });
+
+                        marker.addListener("click", () => {
+                            toggleHighlight(AdvancedMarkerElement, property);
+                        });
+                        return marker
                     });
 
+                    allMarkers.push({
+                        name: "Defibrillators",
+                        markers: defibrillators
+                    });
 
+                    addLegend(allMarkers);
                 })
-
-
         }
-
         initMap();
 
+        function addLegend(markersArray) {
 
+            markersArray.forEach(element => {
 
+                const div = document.createElement("div");
+                div.style = `display:flex; align-items: center; gap:5px`;
 
-        function arrayToCsv(data) {
-            return data.map(row =>
-                row
-                    .map(String)  // convert every value to String
-                    .map(v => v.replaceAll('"', '""'))  // escape double quotes
-                    .map(v => `"${v}"`)  // quote it
-                    .join(',')  // comma-separated
-            ).join('\r\n');  // rows starting on new lines
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.checked = true;
+                checkbox.addEventListener("change", () => {
+                    element.markers.forEach(marker => {
+                        marker.setMap(checkbox.checked ? map : null);
+                    });
+                });
+                const label = document.createElement("label");
+                label.textContent = element.name;
+                label.style = `font-size: 14px;`;
+
+                div.appendChild(checkbox);
+                div.appendChild(label);
+
+                legendDiv.appendChild(div);
+            });
+
         }
-        function downloadBlob(content, filename, contentType) {
-            // Create a blob
-            var blob = new Blob([content], { type: contentType });
-            var url = URL.createObjectURL(blob);
 
-            // Create a link to download it
-            var pom = document.createElement('a');
-            pom.href = url;
-            pom.setAttribute('download', filename);
-            pom.click();
+
+
+        //------------------REMOVE----------------------
+        function convertToCSV(data, filename = 'data.csv') {
+            const entries = Object.values(data);
+            if (entries.length === 0) {
+                console.warn('Empty data object');
+                return;
+            }
+            const headers = Object.keys(entries[0]).join(',');
+            const rows = entries.map(entry =>
+                Object.values(entry).map(value => `"${value}"`).join(',')
+            );
+            const csvContent = [headers, ...rows].join('\n');
+            console.log(csvContent);
+            if (typeof document !== 'undefined') {
+                const downloadCSV = (csv, filename) => {
+                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    const url = URL.createObjectURL(blob);
+
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', filename);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
+                downloadCSV(csvContent, filename);
+            }
+            return csvContent;
         }
+
 
     </script>
 
