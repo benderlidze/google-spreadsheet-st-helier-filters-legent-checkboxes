@@ -28,7 +28,7 @@
             margin: 10px;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-start;
             gap: 10px;
             border-radius: 5px;
             z-index: 11;
@@ -68,8 +68,8 @@
 
         async function initMap() {
             // Request needed libraries.
-            const { Map } = await google.maps.importLibrary("maps");
-            const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+            const { Map, InfoWindow } = await google.maps.importLibrary("maps");
+            const { PinElement, AdvancedMarkerElement } = await google.maps.importLibrary("marker");
             map = new Map(document.getElementById("map"), {
                 center: { lat: 49.21219633759323, lng: -2.139867639955886 },
                 zoom: 12,
@@ -84,34 +84,92 @@
                 };
             });
 
-            d3.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?output=csv")
-                .then(data => {
-                    const defibrillators = data.map(pin => {
-                        const beachFlagImg = document.createElement("img");
-                        beachFlagImg.src = "icons/aed-icon.png";
+            const spreadsheets = [
+                { name: "Defibrillators", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?output=csv", icon: "icons/aed-icon.svg" },
+                { name: "Cemetery", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1362545516&single=true&output=csv", icon: "icons/grave-2-svgrepo-com.svg" },
+                { name: "Parks", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1961951523&single=true&output=csv", icon: "icons/park-svgrepo-com.svg" }
+            ]
 
+            //https://developers.google.com/maps/documentation/javascript/reference/info-window#InfoWindowOptions
+            const infoWindow = new InfoWindow({
+
+            });
+
+            Promise.all(
+                spreadsheets.map(spr => d3.csv(spr.url).then(data => ({ data, name: spr.name, icon: spr.icon })))
+            ).then(results => {
+                console.log(results);
+                results.forEach(result => {
+                    const markers = result.data.map(pin => {
+
+                        const svgUrl = result.icon;
+                        console.log('svgUrl', svgUrl);
                         const marker = new AdvancedMarkerElement({
                             map,
-                            content: beachFlagImg,
                             position: { lat: +pin.latitude, lng: +pin.longitude },
-                            title: pin.address,
+                            content: buildContent(svgUrl),
+                            title: pin.info,
+                            gmpClickable: true,
                         });
 
-                        marker.addListener("click", () => {
-                            toggleHighlight(AdvancedMarkerElement, property);
+                        marker.addListener("click", ({ domEvent, latLng }) => {
+                            const { target } = domEvent;
+                            infoWindow.close();
+                            infoWindow.setContent(marker.title);
+                            infoWindow.open(marker.map, marker);
+
+                            const div = document.createElement("div");
+                            div.innerHTML = result.name;
+                            div.style = `font-weight:bold;font-size: 16px;`;
+
+                            infoWindow.setOptions({
+                                headerContent: div,
+                            });
+
                         });
+
+
+
+
+
                         return marker;
                     });
 
                     allMarkers.push({
-                        name: "Defibrillators",
-                        markers: defibrillators
+                        name: result.name,
+                        markers: markers
                     });
-
-                    addLegend(allMarkers);
                 });
+                addLegend(allMarkers);
+            });
+
+
         }
         initMap();
+
+
+        function toggleHighlight(markerView, property) {
+            console.log('markerView', markerView);
+            if (markerView.content.classList.contains("highlight")) {
+                markerView.content.classList.remove("highlight");
+                markerView.zIndex = null;
+            } else {
+                markerView.content.classList.add("highlight");
+                markerView.zIndex = 1;
+            }
+        }
+
+        function buildContent(icon) {
+            const content = document.createElement("div");
+            content.classList.add("property");
+            content.innerHTML = `
+                <div class="icon" style="width:30px; height: 30px;">
+                    <img src="${icon}" >
+                </div>
+              
+                `;
+            return content;
+        }
 
         function addLegend(markersArray) {
             markersArray.forEach(element => {
