@@ -1,12 +1,15 @@
+<!DOCTYPE html>
 <html>
 
 <head>
     <title>Default Advanced Marker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         #map {
             height: 100%;
+            width: 100%;
         }
 
         html,
@@ -29,6 +32,8 @@
             gap: 10px;
             border-radius: 5px;
             z-index: 11;
+            max-width: 90%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
@@ -38,10 +43,25 @@
     <div id="legend"></div>
     <div id="map"></div>
 
-    <script>(g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })
-            ({ key: "AIzaSyAImnNjxpejsKlQewkCwtBUhyAb560iDSM", v: "weekly" });</script>
     <script>
-
+        (g => {
+            var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window;
+            b = b[c] || (b[c] = {});
+            var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => {
+                await (a = m.createElement("script"));
+                e.set("libraries", [...r] + "");
+                for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]);
+                e.set("callback", c + ".maps." + q);
+                a.src = `https://maps.${c}apis.com/maps/api/js?` + e;
+                d[q] = f;
+                a.onerror = () => h = n(Error(p + " could not load."));
+                a.nonce = m.querySelector("script[nonce]")?.nonce || "";
+                m.head.append(a)
+            }));
+            d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n))
+        })({ key: "AIzaSyAImnNjxpejsKlQewkCwtBUhyAb560iDSM", v: "weekly" });
+    </script>
+    <script>
         let map;
         const legendDiv = document.getElementById("legend");
         const allMarkers = [];
@@ -56,10 +76,16 @@
                 mapId: "4504f8b37365c3d0",
             });
 
+            map.data.loadGeoJson("geodata/map.geojson");
+            map.data.setStyle(function (feature) {
+                return {
+                    strokeColor: "purple",
+                    strokeWeight: 2
+                };
+            });
 
             d3.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?output=csv")
                 .then(data => {
-                    console.log(data)
                     const defibrillators = data.map(pin => {
                         const beachFlagImg = document.createElement("img");
                         beachFlagImg.src = "icons/aed-icon.png";
@@ -74,7 +100,7 @@
                         marker.addListener("click", () => {
                             toggleHighlight(AdvancedMarkerElement, property);
                         });
-                        return marker
+                        return marker;
                     });
 
                     allMarkers.push({
@@ -83,16 +109,14 @@
                     });
 
                     addLegend(allMarkers);
-                })
+                });
         }
         initMap();
 
         function addLegend(markersArray) {
-
             markersArray.forEach(element => {
-
                 const div = document.createElement("div");
-                div.style = `display:flex; align-items: center; gap:5px`;
+                div.style = `display: flex; align-items: center; gap: 5px`;
 
                 const checkbox = document.createElement("input");
                 checkbox.type = "checkbox";
@@ -111,43 +135,7 @@
 
                 legendDiv.appendChild(div);
             });
-
         }
-
-
-
-        //------------------REMOVE----------------------
-        function convertToCSV(data, filename = 'data.csv') {
-            const entries = Object.values(data);
-            if (entries.length === 0) {
-                console.warn('Empty data object');
-                return;
-            }
-            const headers = Object.keys(entries[0]).join(',');
-            const rows = entries.map(entry =>
-                Object.values(entry).map(value => `"${value}"`).join(',')
-            );
-            const csvContent = [headers, ...rows].join('\n');
-            console.log(csvContent);
-            if (typeof document !== 'undefined') {
-                const downloadCSV = (csv, filename) => {
-                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                    const link = document.createElement('a');
-                    const url = URL.createObjectURL(blob);
-
-                    link.setAttribute('href', url);
-                    link.setAttribute('download', filename);
-                    link.style.visibility = 'hidden';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                };
-                downloadCSV(csvContent, filename);
-            }
-            return csvContent;
-        }
-
-
     </script>
 
 </body>
