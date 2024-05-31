@@ -85,15 +85,13 @@
             });
 
             const spreadsheets = [
-                { name: "Defibrillators", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?output=csv", icon: "icons/aed-icon.svg" },
+                { name: "Defibrillators", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=989595694&single=true&output=csv", icon: "icons/aed-icon.svg" },
                 { name: "Cemetery", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1362545516&single=true&output=csv", icon: "icons/grave-2-svgrepo-com.svg" },
                 { name: "Parks", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1961951523&single=true&output=csv", icon: "icons/park-svgrepo-com.svg" }
             ]
 
             //https://developers.google.com/maps/documentation/javascript/reference/info-window#InfoWindowOptions
-            const infoWindow = new InfoWindow({
-
-            });
+            const infoWindow = new InfoWindow();
 
             Promise.all(
                 spreadsheets.map(spr => d3.csv(spr.url).then(data => ({ data, name: spr.name, icon: spr.icon })))
@@ -115,16 +113,24 @@
                         marker.addListener("click", ({ domEvent, latLng }) => {
                             const { target } = domEvent;
                             infoWindow.close();
-                            infoWindow.setContent(marker.title);
-                            infoWindow.open(marker.map, marker);
 
                             const div = document.createElement("div");
-                            div.innerHTML = result.name;
                             div.style = `font-weight:bold;font-size: 16px;`;
+                            div.innerHTML = result.name;
 
                             infoWindow.setOptions({
                                 headerContent: div,
                             });
+
+
+                            infoWindow.setContent(`
+                            <div>
+                                <p>${marker.title}</p>
+                                <a href="https://www.google.com/maps/dir/?api=1&destination=${latLng.lat()},${latLng.lng()}" target="_blank">Navigate</a>
+                            </div>
+                            `);
+                            infoWindow.open(marker.map, marker);
+
 
                         });
 
