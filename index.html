@@ -105,6 +105,8 @@
                 { name: "Cemeteries", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1362545516&single=true&output=csv", icon: "icons/grave-2-svgrepo-com.svg" },
                 { name: "Parks and Gardens", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1961951523&single=true&output=csv", icon: "icons/park-svgrepo-com.svg" },
                 { name: "Public Tiolets", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1160438668&single=true&output=csv", icon: "icons/public-toilet-svgrepo-com.svg" },
+                { name: "Bike Racks", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=460361614&single=true&output=csv", icon: "icons/bicycle-parking-svgrepo-com.svg" },
+
             ]
 
             //https://developers.google.com/maps/documentation/javascript/reference/info-window#InfoWindowOptions
@@ -119,6 +121,7 @@
                 const cemeteriesData = results.find(result => result.name === "Cemeteries");
                 const parksData = results.find(result => result.name === "Parks and Gardens");
                 const publicToiletsData = results.find(result => result.name === "Public Tiolets");
+                const bikeRacksData = results.find(result => result.name === "Bike Racks");
 
                 //----------------- Defibrillators -----------------
                 const defibrilatorsMarkers = defibrilatorsData.data.map(pin => {
@@ -211,6 +214,35 @@
                 allMarkers.push({
                     name: publicToiletsData.name,
                     markers: publicToilets
+                });
+                //----------------- Public Tiolets -----------------
+                const bikeRacks = bikeRacksData.data.map(pin => {
+                    const title = "Public Tiolet";
+                    const icon = bikeRacksData.icon;
+                    const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
+                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
+                    const infoWindowContent = `
+                            <div class="pin-container">
+                                <div><h1>${pin.name}</h1></div>
+                                <div class="description-container">
+                                    ${img}
+                                    <div class="pin-description">
+                                        <b>Location:</b> ${pin.location}<br>
+                                        <b>Maximum capacity:</b> ${pin['maximum capacity']}<br>
+                                        <b>Covered facility:</b> ${pin['covered facility']}<br>
+                                    </div>
+                                </div>
+                                    ${website}
+                                <div>
+                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
+                                </div>
+                            </div>
+                            `;
+                    return buildMarker({ icon, pin, title, infoWindowContent })
+                });
+                allMarkers.push({
+                    name: bikeRacksData.name,
+                    markers: bikeRacks
                 });
 
 
