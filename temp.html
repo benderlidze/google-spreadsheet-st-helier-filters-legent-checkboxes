@@ -103,8 +103,7 @@
             const spreadsheets = [
                 { name: "Defibrillators", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=989595694&single=true&output=csv", icon: "icons/aed-icon.svg" },
                 { name: "Cemeteries", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1362545516&single=true&output=csv", icon: "icons/grave-2-svgrepo-com.svg" },
-                { name: "Parks and Gardens", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1961951523&single=true&output=csv", icon: "icons/park-svgrepo-com.svg" },
-                { name: "Public Tiolets", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1160438668&single=true&output=csv", icon: "icons/public-toilet-svgrepo-com.svg" },
+                { name: "Parks and Gardens", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1961951523&single=true&output=csv", icon: "icons/park-svgrepo-com.svg" }
             ]
 
             //https://developers.google.com/maps/documentation/javascript/reference/info-window#InfoWindowOptions
@@ -118,106 +117,37 @@
                 const defibrilatorsData = results.find(result => result.name === "Defibrillators");
                 const cemeteriesData = results.find(result => result.name === "Cemeteries");
                 const parksData = results.find(result => result.name === "Parks and Gardens");
-                const publicToiletsData = results.find(result => result.name === "Public Tiolets");
 
                 //----------------- Defibrillators -----------------
-                const defibrilatorsMarkers = defibrilatorsData.data.map(pin => {
-                    const title = "Defibrillator";
-                    const icon = defibrilatorsData.icon;
-                    const infoWindowContent = `
-                            <div>
-                                <p>${pin.address}</p>
-                                <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
-                            </div>
-                            `;
-
-                    return buildMarker({ icon, pin, title, infoWindowContent })
-                });
+                const defibrilatorsMarkers = defibrilatorsData.data.map(pin =>
+                    buildDefibrilatorsMarker({ icon: defibrilatorsData.icon, pin })
+                );
                 allMarkers.push({
                     name: defibrilatorsData.name,
                     markers: defibrilatorsMarkers
                 });
                 //----------------- Cemeteries -----------------
-                const cemeteriesMarkers = cemeteriesData.data.map(pin => {
-                    const title = "Cemetery";
-                    const icon = cemeteriesData.icon;
-                    const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
-                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
-                    const infoWindowContent = `
-                            <div class="pin-container">
-                                <div><h1>${pin.name}</h1></div>
-                                <div class="description-container">
-                                    ${img}
-                                    <div class="pin-description">${pin.description}</div>
-                                </div>
-                                    ${website}
-                                <div>
-                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
-                                </div>
-                            </div>
-                            `;
-                    return buildMarker({ icon, pin, title, infoWindowContent })
-                });
+                const cemeteriesMarkers = cemeteriesData.data.map(pin =>
+                    buildCemeteriesMarker({ icon: cemeteriesData.icon, pin })
+                );
                 allMarkers.push({
                     name: cemeteriesData.name,
                     markers: cemeteriesMarkers
                 });
                 //----------------- Parks and Gardens -----------------
-                const parksMarkers = parksData.data.map(pin => {
-                    const title = "Parks and Gardens";
-                    const icon = parksData.icon;
-                    const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
-                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
-                    const infoWindowContent = `
-                            <div class="pin-container">
-                                <div><h1>${pin.name}</h1></div>
-                                <div class="description-container">
-                                    ${img}
-                                    <div class="pin-description">${pin.description}</div>
-                                </div>
-                                    ${website}
-                                <div>
-                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
-                                </div>
-                            </div>
-                            `;
-                    return buildMarker({ icon, pin, title, infoWindowContent })
-                });
+                const parksMarkers = parksData.data.map(pin =>
+                    buildParksAndGardensMarker({ icon: parksData.icon, pin })
+                );
                 allMarkers.push({
                     name: parksData.name,
                     markers: parksMarkers
-                });
-                //----------------- Public Tiolets -----------------
-                const publicToilets = publicToiletsData.data.map(pin => {
-                    const title = "Public Tiolet";
-                    const icon = publicToiletsData.icon;
-                    const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
-                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
-                    const infoWindowContent = `
-                            <div class="pin-container">
-                                <div><h1>${pin.name}</h1></div>
-                                <div class="description-container">
-                                    ${img}
-                                    <div class="pin-description">${pin.notes}</div>
-                                </div>
-                                    ${website}
-                                <div>
-                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
-                                </div>
-                            </div>
-                            `;
-                    return buildMarker({ icon, pin, title, infoWindowContent })
-                });
-                allMarkers.push({
-                    name: publicToiletsData.name,
-                    markers: publicToilets
                 });
 
 
                 addLegend(allMarkers);
             });
 
-            function buildMarker({ icon, pin, title, infoWindowContent }) {
+            function buildParksAndGardensMarker({ icon, pin }) {
                 const svgUrl = icon;
                 const marker = new AdvancedMarkerElement({
                     map,
@@ -231,16 +161,69 @@
                     infoWindow.close();
                     const div = document.createElement("div");
                     div.style = `font-weight:bold;font-size: 16px;`;
-                    div.innerHTML = title;
+                    div.innerHTML = "Parks and Gardens";
                     infoWindow.setOptions({
                         headerContent: div,
                     });
-                    infoWindow.setContent(infoWindowContent);
+
+                    const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
+                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
+
+                    infoWindow.setContent(`
+                            <div class="pin-container">
+                                <div><h1>${pin.name}</h1></div>
+                                <div class="description-container">
+                                    ${img}
+                                    <div class="pin-description">${pin.description}</div>
+                                </div>
+                                    ${website}
+                                <div>
+                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${latLng.lat()},${latLng.lng()}" target="_blank">View on Google Maps</a>
+                                </div>
+                            </div>
+                            `);
                     infoWindow.open(marker.map, marker);
                 });
                 return marker;
             }
 
+            function buildCemeteriesMarker({ icon, pin }) {
+                const svgUrl = icon;
+                const marker = new AdvancedMarkerElement({
+                    map,
+                    position: { lat: +pin.latitude, lng: +pin.longitude },
+                    content: buildContent(svgUrl),
+                    title: pin.info,
+                    gmpClickable: true,
+                });
+                marker.addListener("click", ({ domEvent, latLng }) => {
+                    const { target } = domEvent;
+                    infoWindow.close();
+                    const div = document.createElement("div");
+                    div.style = `font-weight:bold;font-size: 16px;`;
+                    div.innerHTML = "Cemetery";
+                    infoWindow.setOptions({
+                        headerContent: div,
+                    });
+                    const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
+                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
+                    infoWindow.setContent(`
+                            <div class="pin-container">
+                                <div><h1>${pin.name}</h1></div>
+                                <div class="description-container">
+                                    ${img}
+                                    <div class="pin-description">${pin.description}</div>
+                                </div>
+                                    ${website}
+                                <div>
+                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${latLng.lat()},${latLng.lng()}" target="_blank">View on Google Maps</a>
+                                </div>
+                            </div>
+                            `);
+                    infoWindow.open(marker.map, marker);
+                });
+                return marker;
+            }
 
             function buildDefibrilatorsMarker({ icon, pin }) {
                 const svgUrl = icon;
