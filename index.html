@@ -92,13 +92,24 @@
                 mapId: "4504f8b37365c3d0",
             });
 
-            map.data.loadGeoJson("geodata/map.geojson");
-            map.data.setStyle(function (feature) {
-                return {
-                    strokeColor: "purple",
-                    strokeWeight: 2
-                };
+            // Create a new Data layer for the roads
+            var roadsLayer = new google.maps.Data();
+            roadsLayer.loadGeoJson('geodata/roads_st_helier.geojson');
+            roadsLayer.setStyle({
+                strokeColor: 'blue',
+                strokeWeight: 2
             });
+            roadsLayer.setMap(map);
+
+            // Create a new Data layer for the map
+            var mapLayer = new google.maps.Data();
+            mapLayer.loadGeoJson('geodata/map.geojson');
+            mapLayer.setStyle({
+                strokeColor: 'purple',
+                strokeWeight: 2
+            });
+            mapLayer.setMap(map);
+
 
             const spreadsheets = [
                 { name: "Defibrillators", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=989595694&single=true&output=csv", icon: "icons/aed-icon.svg" },
