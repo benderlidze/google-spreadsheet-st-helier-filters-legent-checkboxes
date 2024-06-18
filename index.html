@@ -93,6 +93,20 @@
             });
 
             //--------------------  Roads --------------------
+            const cycleNetwork = new google.maps.Data();
+            cycleNetwork.loadGeoJson('geodata/cycle_network.geojson');
+            cycleNetwork.setStyle({
+                strokeColor: 'green',
+                strokeWeight: 4
+            });
+            cycleNetwork.setMap(map);
+            const cycleNetworkInfo = new google.maps.InfoWindow();
+            cycleNetwork.addListener('click', function (event) {
+
+            });
+            addToLegend({ name: "Cycle network", callback: (checked) => cycleNetwork.setMap(checked ? map : null) });
+            //--------------------  Roads --------------------
+            //--------------------  Roads --------------------
             const roadsLayer = new google.maps.Data();
             roadsLayer.loadGeoJson('geodata/roads_st_helier.geojson');
             roadsLayer.setStyle({
