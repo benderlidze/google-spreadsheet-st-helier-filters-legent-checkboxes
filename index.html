@@ -92,17 +92,77 @@
                 mapId: "4504f8b37365c3d0",
             });
 
-            // Create a new Data layer for the roads
-            var roadsLayer = new google.maps.Data();
+            //--------------------  Roads --------------------
+            const roadsLayer = new google.maps.Data();
             roadsLayer.loadGeoJson('geodata/roads_st_helier.geojson');
             roadsLayer.setStyle({
                 strokeColor: 'blue',
-                strokeWeight: 2
+                strokeWeight: 4
             });
             roadsLayer.setMap(map);
+            const roadsLayerInfo = new google.maps.InfoWindow();
+            roadsLayer.addListener('click', function (event) {
+                const speedLimit = event.feature.getProperty('SpeedLimit');
+                const name = event.feature.getProperty('REAL_NAME');
+                const content = `<div><strong>Road Name:</strong> ${name}</div>
+                     <div><strong>Speed limit:</strong> ${speedLimit}</div>`;
+                roadsLayerInfo.setContent(content);
+                roadsLayerInfo.setPosition(event.latLng);
+                roadsLayerInfo.open(map);
+            });
+            addToLegend({ name: "Roads", callback: (checked) => roadsLayer.setMap(checked ? map : null) });
+            //--------------------  Roads --------------------
 
-            // Create a new Data layer for the map
-            var mapLayer = new google.maps.Data();
+            //--------------------  Parking --------------------
+            const parkingZones = new google.maps.Data();
+            parkingZones.loadGeoJson('geodata/parking_zones.geojson');
+            parkingZones.setStyle(function (feature) {
+                const name = feature.getProperty('Name');
+                let strokeColor = 'gray';
+                let fillColor = 'yellow';
+                let fillOpacity = 0.6;
+
+                console.log('name!!!', feature);
+                switch (name) {
+                    case "Richmond Road":
+                        strokeColor = 'red';
+                        fillColor = '#fbd2d2';
+                        break;
+                    case `St.Mark's Road`:
+                        strokeColor = 'blue';
+                        fillColor = '#c1e4f0';
+                        break;
+                    case `St Thomas'`:
+                        strokeColor = 'green';
+                        fillColor = '#e8f0cb';
+                        break;
+                    case `Cheapside'`:
+                        strokeColor = 'green';
+                        fillColor = 'green';
+                        break;
+                }
+
+                return {
+                    strokeColor: strokeColor,
+                    strokeWeight: 3,
+                    fillColor: fillColor,
+                    fillOpacity: fillOpacity
+                };
+            });
+            parkingZones.setMap(map);
+            const parkingLotsInfo = new google.maps.InfoWindow();
+            parkingZones.addListener('click', function (event) {
+                console.log(event);
+                const name = event.feature.getProperty('Name');
+                const content = `<div><strong>Name:</strong> ${name}</div>`;
+                roadsLayerInfo.setContent(content);
+                roadsLayerInfo.setPosition(event.latLng);
+                roadsLayerInfo.open(map);
+            });
+            addToLegend({ name: "Resident Parking Zones", callback: (checked) => parkingZones.setMap(checked ? map : null) });
+            //--------------------  Roads --------------------
+
+            const mapLayer = new google.maps.Data();
             mapLayer.loadGeoJson('geodata/map.geojson');
             mapLayer.setStyle({
                 strokeColor: 'purple',
@@ -344,26 +404,34 @@
 
         function addLegend(markersArray) {
             markersArray.forEach(element => {
-                const div = document.createElement("div");
-                div.style = `display: flex; align-items: center; gap: 5px`;
-
-                const checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.checked = true;
-                checkbox.addEventListener("change", () => {
-                    element.markers.forEach(marker => {
-                        marker.setMap(checkbox.checked ? map : null);
-                    });
+                addToLegend({
+                    name: element.name, callback: (checked) => {
+                        element.markers.forEach(marker => {
+                            marker.setMap(checked ? map : null);
+                        });
+                    }
                 });
-                const label = document.createElement("label");
-                label.textContent = element.name;
-                label.style = `font-size: 14px;`;
-
-                div.appendChild(checkbox);
-                div.appendChild(label);
-
-                legendDiv.appendChild(div);
             });
+        }
+
+        function addToLegend({ name, callback }) {
+            const div = document.createElement("div");
+            div.style = `display: flex; align-items: center; gap: 5px`;
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = true;
+            checkbox.addEventListener("change", () => {
+                if (typeof callback === "function") {
+                    callback(checkbox.checked);
+                }
+            });
+            const label = document.createElement("label");
+            label.textContent = name;
+            label.style = `font-size: 14px;`;
+            div.appendChild(checkbox);
+            div.appendChild(label);
+            legendDiv.appendChild(div);
         }
     </script>
 
