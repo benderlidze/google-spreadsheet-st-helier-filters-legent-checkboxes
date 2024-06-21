@@ -103,91 +103,20 @@
                     });
                 }
             });
-            //--------------------  Roads --------------------
-            const cycleNetwork = new google.maps.Data();
-            cycleNetwork.loadGeoJson('geodata/cycle_network.geojson');
-            cycleNetwork.setStyle({
-                strokeColor: 'green',
-                strokeWeight: 4
-            });
-            cycleNetwork.setMap(map);
-            const cycleNetworkInfo = new google.maps.InfoWindow();
-            cycleNetwork.addListener('click', function (event) {
+            // --------------------  Roads --------------------
+            // const cycleNetwork = new google.maps.Data();
+            // cycleNetwork.loadGeoJson('geodata/cycle_network.geojson');
+            // cycleNetwork.setStyle({
+            //     strokeColor: 'green',
+            //     strokeWeight: 4
+            // });
+            // cycleNetwork.setMap(map);
+            // const cycleNetworkInfo = new google.maps.InfoWindow();
+            // cycleNetwork.addListener('click', function (event) {
 
-            });
-            const cycleCheck = addToLegend({ name: "Cycle network", callback: (checked) => cycleNetwork.setMap(checked ? map : null) });
-            checkboxes.push(cycleCheck.checkbox);
-            //--------------------  Roads --------------------
-            //--------------------  Roads --------------------
-            const roadsLayer = new google.maps.Data();
-            roadsLayer.loadGeoJson('geodata/roads_st_helier.geojson');
-            roadsLayer.setStyle({
-                strokeColor: 'blue',
-                strokeWeight: 4
-            });
-            roadsLayer.setMap(map);
-            const roadsLayerInfo = new google.maps.InfoWindow();
-            roadsLayer.addListener('click', function (event) {
-                const speedLimit = event.feature.getProperty('SpeedLimit');
-                const name = event.feature.getProperty('REAL_NAME');
-                const content = `<div><strong>Road Name:</strong> ${name}</div>
-                     <div><strong>Speed limit:</strong> ${speedLimit}</div>`;
-                roadsLayerInfo.setContent(content);
-                roadsLayerInfo.setPosition(event.latLng);
-                roadsLayerInfo.open(map);
-            });
-            const roadsCheck = addToLegend({ name: "Roads", callback: (checked) => roadsLayer.setMap(checked ? map : null) });
-            checkboxes.push(roadsCheck.checkbox);
-            //--------------------  Roads --------------------
-
-            //--------------------  Parking --------------------
-            const parkingZones = new google.maps.Data();
-            parkingZones.loadGeoJson('geodata/parking_zones.geojson');
-            parkingZones.setStyle(function (feature) {
-                const name = feature.getProperty('Name');
-                let strokeColor = 'gray';
-                let fillColor = 'yellow';
-                let fillOpacity = 0.6;
-
-                console.log('name!!!', feature);
-                switch (name) {
-                    case "Richmond Road":
-                        strokeColor = 'red';
-                        fillColor = '#fbd2d2';
-                        break;
-                    case `St.Mark's Road`:
-                        strokeColor = 'blue';
-                        fillColor = '#c1e4f0';
-                        break;
-                    case `St Thomas'`:
-                        strokeColor = 'green';
-                        fillColor = '#e8f0cb';
-                        break;
-                    case `Cheapside'`:
-                        strokeColor = 'green';
-                        fillColor = 'green';
-                        break;
-                }
-
-                return {
-                    strokeColor: strokeColor,
-                    strokeWeight: 3,
-                    fillColor: fillColor,
-                    fillOpacity: fillOpacity
-                };
-            });
-            parkingZones.setMap(map);
-            const parkingLotsInfo = new google.maps.InfoWindow();
-            parkingZones.addListener('click', function (event) {
-                console.log(event);
-                const name = event.feature.getProperty('Name');
-                const content = `<div><strong>Name:</strong> ${name}</div>`;
-                roadsLayerInfo.setContent(content);
-                roadsLayerInfo.setPosition(event.latLng);
-                roadsLayerInfo.open(map);
-            });
-            const pZonesCheck = addToLegend({ name: "Resident Parking Zones", callback: (checked) => parkingZones.setMap(checked ? map : null) });
-            checkboxes.push(pZonesCheck.checkbox);
+            // });
+            // const cycleCheck = addToLegend({ name: "Cycle network", callback: (checked) => cycleNetwork.setMap(checked ? map : null) });
+            // checkboxes.push(cycleCheck.checkbox);
             //--------------------  Roads --------------------
 
             const mapLayer = new google.maps.Data();
@@ -198,7 +127,6 @@
             });
             mapLayer.setMap(map);
 
-
             const spreadsheets = [
                 { name: "Defibrillators", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=989595694&single=true&output=csv", icon: "icons/aed-icon.svg" },
                 { name: "Cemeteries", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1362545516&single=true&output=csv", icon: "icons/grave-2-svgrepo-com.svg" },
@@ -207,8 +135,9 @@
                 { name: "Bike Racks", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=460361614&single=true&output=csv", icon: "icons/bicycle-parking-svgrepo-com.svg" },
                 { name: "Disabled Parking Spaces", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1564193663&single=true&output=csv" },
                 { name: "Unloading Bays", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=162926988&single=true&output=csv" },
-
-
+                { name: "Resident Parking Zones", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=230637395&single=true&output=csv" },
+                { name: "Roads", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=377968935&single=true&output=csv" },
+                { name: "Cycle Routes", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1767825220&single=true&output=csv" },
             ]
 
             //https://developers.google.com/maps/documentation/javascript/reference/info-window#InfoWindowOptions
@@ -226,6 +155,168 @@
                 const bikeRacksData = results.find(result => result.name === "Bike Racks");
                 const disabledPrakingSpacesData = results.find(result => result.name === "Disabled Parking Spaces");
                 const unloadingBaysData = results.find(result => result.name === "Unloading Bays");
+                const residentParkingData = results.find(result => result.name === "Resident Parking Zones");
+                const roadsData = results.find(result => result.name === "Roads");
+                const cycleData = results.find(result => result.name === "Cycle Routes");
+
+
+                //----------------- Cycle -----------------
+                const cycleGeojson = cycleData.data.map(item => {
+                    return {
+                        type: "Feature",
+                        properties: {
+                            name: item["name"],
+                            speedLimit: item["speed limit"],
+                        },
+                        geometry: JSON.parse(item["geometry"])
+                    }
+                });
+                const cycleCollection = {
+                    type: "FeatureCollection",
+                    features: cycleGeojson
+                };
+                const cycleLayer = new google.maps.Data();
+                cycleLayer.addGeoJson(cycleCollection);
+                cycleLayer.setStyle({
+                    strokeColor: 'green',
+                    strokeWeight: 4
+                });
+                cycleLayer.setMap(map);
+                const cycleInfo = new google.maps.InfoWindow();
+                cycleLayer.addListener('click', function (event) {
+                    const speedLimit = event.feature.getProperty('speedLimit');
+                    const name = event.feature.getProperty('name');
+                    const content = `
+                        <div><strong>Name:</strong> ${name}</div>
+                    `;
+                    cycleInfo.setContent(content);
+                    cycleInfo.setPosition(event.latLng);
+                    cycleInfo.open(map);
+                });
+                const cycleCheck = addToLegend({ name: cycleData.name, callback: (checked) => cycleLayer.setMap(checked ? map : null) });
+                checkboxes.push(cycleCheck.checkbox);
+
+                //----------------- Roads -----------------
+                const roadsGeojson = roadsData.data.map(item => {
+                    return {
+                        type: "Feature",
+                        properties: {
+                            name: item["name"],
+                            speedLimit: item["speed limit"],
+                        },
+                        geometry: JSON.parse(item["geometry"])
+                    }
+                });
+                const roadsCollection = {
+                    type: "FeatureCollection",
+                    features: roadsGeojson
+                };
+                const roadsLayer = new google.maps.Data();
+                roadsLayer.addGeoJson(roadsCollection);
+                roadsLayer.setStyle({
+                    strokeColor: 'blue',
+                    strokeWeight: 4
+                });
+                roadsLayer.setMap(map);
+                const roadsInfo = new google.maps.InfoWindow();
+                roadsLayer.addListener('click', function (event) {
+                    const speedLimit = event.feature.getProperty('speedLimit');
+                    const name = event.feature.getProperty('name');
+                    const content = `
+                        <div><strong>Name:</strong> ${name}</div>
+                        <div><strong>Speed limit:</strong> ${speedLimit}</div>
+                    `;
+                    roadsInfo.setContent(content);
+                    roadsInfo.setPosition(event.latLng);
+                    roadsInfo.open(map);
+                });
+                const roadsCheck = addToLegend({ name: roadsData.name, callback: (checked) => roadsLayer.setMap(checked ? map : null) });
+                checkboxes.push(roadsCheck.checkbox);
+
+                //----------------- Resident Parking Zones -----------------
+                const residentParkingZonesGeojson = residentParkingData.data.map(item => {
+                    return {
+                        type: "Feature",
+                        properties: {
+                            name: item["name"],
+                            resSpaces: item["residents spaces"],
+                            visSpaces: item["visitors spaces"],
+                            disSpaces: item["disabled parking spaces"],
+                            unldSpaces: item["unloading bays"],
+                            docSpaces: item["doctors spaces"],
+                            motoSpaces: item["motorcycles spaces"],
+                            bicSpaces: item["bicycles spaces"],
+                        },
+                        geometry: JSON.parse(item["geometry"])
+                    }
+                });
+                const residentParkingZonesCollection = {
+                    type: "FeatureCollection",
+                    features: residentParkingZonesGeojson
+                };
+                const residentParkingLayer = new google.maps.Data();
+                residentParkingLayer.addGeoJson(residentParkingZonesCollection);
+                residentParkingLayer.setStyle(function (feature) {
+                    const name = feature.getProperty('name');
+                    let strokeColor = 'gray';
+                    let fillColor = 'yellow';
+                    let fillOpacity = 0.6;
+                    console.log('name!!!', feature);
+                    switch (name) {
+                        case "Richmond Road":
+                            strokeColor = 'red';
+                            fillColor = '#fbd2d2';
+                            break;
+                        case `St.Mark's Road`:
+                            strokeColor = 'blue';
+                            fillColor = '#c1e4f0';
+                            break;
+                        case `St Thomas'`:
+                            strokeColor = 'green';
+                            fillColor = '#e8f0cb';
+                            break;
+                        case `Cheapside'`:
+                            strokeColor = 'green';
+                            fillColor = 'green';
+                            break;
+                    }
+
+                    return {
+                        strokeColor: strokeColor,
+                        strokeWeight: 3,
+                        fillColor: fillColor,
+                        fillOpacity: fillOpacity
+                    };
+                });
+                residentParkingLayer.setMap(map);
+
+                const residentParkingInfo = new google.maps.InfoWindow();
+                residentParkingLayer.addListener('click', function (event) {
+                    const numberOfSpaces = event.feature.getProperty('numberOfSpaces');
+                    const name = event.feature.getProperty('name');
+                    const resSpaces = event.feature.getProperty('resSpaces')
+                    const visSpaces = event.feature.getProperty('visSpaces')
+                    const disSpaces = event.feature.getProperty('disSpaces')
+                    const unldSpaces = event.feature.getProperty('unldSpaces')
+                    const docSpaces = event.feature.getProperty('docSpaces')
+                    const motoSpaces = event.feature.getProperty('motoSpaces')
+                    const bicSpaces = event.feature.getProperty('bicSpaces')
+                    const content = `
+                        <div><strong>Name:</strong> ${name}</div>
+                        <div><strong>residents spaces</strong> ${resSpaces}</div>
+                        <div><strong>visitors spaces</strong> ${visSpaces}</div>
+                        <div><strong>disabled parking spaces</strong> ${disSpaces}</div>
+                        <div><strong>unloading bays</strong> ${unldSpaces}</div>
+                        <div><strong>doctors spaces</strong> ${docSpaces}</div>
+                        <div><strong>motorcycles spaces</strong> ${motoSpaces}</div>
+                        <div><strong>bicycles spaces</strong> ${bicSpaces}</div>
+                    `;
+                    residentParkingInfo.setContent(content);
+                    residentParkingInfo.setPosition(event.latLng);
+                    residentParkingInfo.open(map);
+                });
+                const residentParkingCheck = addToLegend({ name: residentParkingData.name, callback: (checked) => residentParkingLayer.setMap(checked ? map : null) });
+                checkboxes.push(residentParkingCheck.checkbox);
 
                 //----------------- Unloading Bays -----------------
                 const unloadingBaysGeojson = unloadingBaysData.data.map(item => {
