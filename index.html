@@ -81,6 +81,7 @@
         let map;
         const legendDiv = document.getElementById("legend");
         const allMarkers = [];
+        const checkboxes = [];
 
         async function initMap() {
             // Request needed libraries.
@@ -92,6 +93,16 @@
                 mapId: "4504f8b37365c3d0",
             });
 
+            //--------------------  HIDE ALL --------------------
+            addToLegend({
+                name: "Hide all", callback: (checked) => {
+                    checkboxes.forEach(checkbox => {
+                        // checkbox.checked = checked;
+                        // checkbox.dispatchEvent(new Event("change"));
+                        checkbox.click()
+                    });
+                }
+            });
             //--------------------  Roads --------------------
             const cycleNetwork = new google.maps.Data();
             cycleNetwork.loadGeoJson('geodata/cycle_network.geojson');
@@ -104,7 +115,8 @@
             cycleNetwork.addListener('click', function (event) {
 
             });
-            addToLegend({ name: "Cycle network", callback: (checked) => cycleNetwork.setMap(checked ? map : null) });
+            const cycleCheck = addToLegend({ name: "Cycle network", callback: (checked) => cycleNetwork.setMap(checked ? map : null) });
+            checkboxes.push(cycleCheck.checkbox);
             //--------------------  Roads --------------------
             //--------------------  Roads --------------------
             const roadsLayer = new google.maps.Data();
@@ -124,7 +136,8 @@
                 roadsLayerInfo.setPosition(event.latLng);
                 roadsLayerInfo.open(map);
             });
-            addToLegend({ name: "Roads", callback: (checked) => roadsLayer.setMap(checked ? map : null) });
+            const roadsCheck = addToLegend({ name: "Roads", callback: (checked) => roadsLayer.setMap(checked ? map : null) });
+            checkboxes.push(roadsCheck.checkbox);
             //--------------------  Roads --------------------
 
             //--------------------  Parking --------------------
@@ -173,7 +186,8 @@
                 roadsLayerInfo.setPosition(event.latLng);
                 roadsLayerInfo.open(map);
             });
-            addToLegend({ name: "Resident Parking Zones", callback: (checked) => parkingZones.setMap(checked ? map : null) });
+            const pZonesCheck = addToLegend({ name: "Resident Parking Zones", callback: (checked) => parkingZones.setMap(checked ? map : null) });
+            checkboxes.push(pZonesCheck.checkbox);
             //--------------------  Roads --------------------
 
             const mapLayer = new google.maps.Data();
@@ -191,6 +205,9 @@
                 { name: "Parks and Gardens", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1961951523&single=true&output=csv", icon: "icons/park-svgrepo-com.svg" },
                 { name: "Public Tiolets", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1160438668&single=true&output=csv", icon: "icons/public-toilet-svgrepo-com.svg" },
                 { name: "Bike Racks", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=460361614&single=true&output=csv", icon: "icons/bicycle-parking-svgrepo-com.svg" },
+                { name: "Disabled Parking Spaces", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1564193663&single=true&output=csv" },
+                { name: "Unloading Bays", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=162926988&single=true&output=csv" },
+
 
             ]
 
@@ -207,6 +224,88 @@
                 const parksData = results.find(result => result.name === "Parks and Gardens");
                 const publicToiletsData = results.find(result => result.name === "Public Tiolets");
                 const bikeRacksData = results.find(result => result.name === "Bike Racks");
+                const disabledPrakingSpacesData = results.find(result => result.name === "Disabled Parking Spaces");
+                const unloadingBaysData = results.find(result => result.name === "Unloading Bays");
+
+                //----------------- Unloading Bays -----------------
+                const unloadingBaysGeojson = unloadingBaysData.data.map(item => {
+                    return {
+                        type: "Feature",
+                        properties: {
+                            name: item["name"],
+                            rpz: item["corresponding rpz"],
+                            numberOfSpaces: item["number of spaces"],
+                        },
+                        geometry: JSON.parse(item["geometry"])
+                    }
+                });
+                const unloadingCollection = {
+                    type: "FeatureCollection",
+                    features: unloadingBaysGeojson
+                };
+                const unloadingBaysLayer = new google.maps.Data();
+                unloadingBaysLayer.addGeoJson(unloadingCollection);
+                unloadingBaysLayer.setStyle({
+                    strokeColor: 'orange',
+                    strokeWeight: 6
+                });
+                unloadingBaysLayer.setMap(map);
+                const unloadingBaysInfo = new google.maps.InfoWindow();
+                unloadingBaysLayer.addListener('click', function (event) {
+                    const numberOfSpaces = event.feature.getProperty('numberOfSpaces');
+                    const name = event.feature.getProperty('name');
+                    const rpz = event.feature.getProperty('rpz');
+                    const content = `
+                        <div><strong>Name:</strong> ${name}</div>
+                        <div><strong>Number of spaces:</strong> ${numberOfSpaces}</div>
+                        <div><strong>RPZ:</strong> ${rpz}</div>
+                    `;
+                    unloadingBaysInfo.setContent(content);
+                    unloadingBaysInfo.setPosition(event.latLng);
+                    unloadingBaysInfo.open(map);
+                });
+                const unloadingCheck = addToLegend({ name: unloadingBaysData.name, callback: (checked) => unloadingBaysLayer.setMap(checked ? map : null) });
+                checkboxes.push(unloadingCheck.checkbox);
+
+                //----------------- Disabled Parking Spaces -----------------
+                const disabledPrakingSpacesGeojson = disabledPrakingSpacesData.data.map(item => {
+                    return {
+                        type: "Feature",
+                        properties: {
+                            name: item["name"],
+                            rpz: item["corresponding rpz"],
+                            numberOfSpaces: item["number of spaces"],
+                        },
+                        geometry: JSON.parse(item["geometry"])
+                    }
+                });
+                const disabledCollection = {
+                    type: "FeatureCollection",
+                    features: disabledPrakingSpacesGeojson
+                };
+                const disabledPrakingSpacesLayer = new google.maps.Data();
+                disabledPrakingSpacesLayer.addGeoJson(disabledCollection);
+                disabledPrakingSpacesLayer.setStyle({
+                    strokeColor: 'green',
+                    strokeWeight: 6
+                });
+                disabledPrakingSpacesLayer.setMap(map);
+                const disabledPrakingSpacesInfo = new google.maps.InfoWindow();
+                disabledPrakingSpacesLayer.addListener('click', function (event) {
+                    const numberOfSpaces = event.feature.getProperty('numberOfSpaces');
+                    const name = event.feature.getProperty('name');
+                    const rpz = event.feature.getProperty('rpz');
+                    const content = `
+                        <div><strong>Name:</strong> ${name}</div>
+                        <div><strong>Number of spaces:</strong> ${numberOfSpaces}</div>
+                        <div><strong>RPZ:</strong> ${rpz}</div>
+                    `;
+                    disabledPrakingSpacesInfo.setContent(content);
+                    disabledPrakingSpacesInfo.setPosition(event.latLng);
+                    disabledPrakingSpacesInfo.open(map);
+                });
+                const disabledCheck = addToLegend({ name: disabledPrakingSpacesData.name, callback: (checked) => disabledPrakingSpacesLayer.setMap(checked ? map : null) });
+                checkboxes.push(disabledCheck.checkbox);
 
                 //----------------- Defibrillators -----------------
                 const defibrilatorsMarkers = defibrilatorsData.data.map(pin => {
@@ -418,13 +517,14 @@
 
         function addLegend(markersArray) {
             markersArray.forEach(element => {
-                addToLegend({
+                const m = addToLegend({
                     name: element.name, callback: (checked) => {
                         element.markers.forEach(marker => {
                             marker.setMap(checked ? map : null);
                         });
                     }
                 });
+                checkboxes.push(m.checkbox);
             });
         }
 
@@ -446,6 +546,10 @@
             div.appendChild(checkbox);
             div.appendChild(label);
             legendDiv.appendChild(div);
+
+            return {
+                checkbox,
+            }
         }
     </script>
 
