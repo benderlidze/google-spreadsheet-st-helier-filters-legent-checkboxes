@@ -131,7 +131,7 @@
                 { name: "Defibrillators", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=989595694&single=true&output=csv", icon: "icons/aed-icon.svg" },
                 { name: "Cemeteries", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1362545516&single=true&output=csv", icon: "icons/grave-2-svgrepo-com.svg" },
                 { name: "Parks and Gardens", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1961951523&single=true&output=csv", icon: "icons/park-svgrepo-com.svg" },
-                { name: "Public Tiolets", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1160438668&single=true&output=csv", icon: "icons/public-toilet-svgrepo-com.svg" },
+                { name: "Public Toilets", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1160438668&single=true&output=csv", icon: "icons/public-toilet-svgrepo-com.svg" },
                 { name: "Bike Racks", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=460361614&single=true&output=csv", icon: "icons/bicycle-parking-svgrepo-com.svg" },
                 { name: "Disabled Parking Spaces", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1564193663&single=true&output=csv" },
                 { name: "Unloading Bays", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=162926988&single=true&output=csv" },
@@ -151,7 +151,7 @@
                 const defibrilatorsData = results.find(result => result.name === "Defibrillators");
                 const cemeteriesData = results.find(result => result.name === "Cemeteries");
                 const parksData = results.find(result => result.name === "Parks and Gardens");
-                const publicToiletsData = results.find(result => result.name === "Public Tiolets");
+                const publicToiletsData = results.find(result => result.name === "Public Toilets");
                 const bikeRacksData = results.find(result => result.name === "Bike Racks");
                 const disabledPrakingSpacesData = results.find(result => result.name === "Disabled Parking Spaces");
                 const unloadingBaysData = results.find(result => result.name === "Unloading Bays");
@@ -465,9 +465,9 @@
                     name: parksData.name,
                     markers: parksMarkers
                 });
-                //----------------- Public Tiolets -----------------
+                //----------------- Public Toilets -----------------
                 const publicToilets = publicToiletsData.data.map(pin => {
-                    const title = "Public Tiolet";
+                    const title = "Public Toilets";
                     const icon = publicToiletsData.icon;
                     const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
                     const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
@@ -490,9 +490,9 @@
                     name: publicToiletsData.name,
                     markers: publicToilets
                 });
-                //----------------- Public Tiolets -----------------
+                //----------------- Public Toilets -----------------
                 const bikeRacks = bikeRacksData.data.map(pin => {
-                    const title = "Public Tiolet";
+                    const title = "Public Toilets";
                     const icon = bikeRacksData.icon;
                     const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
                     const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
