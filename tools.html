@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+
+    <script>
+        function geojsonToCsv(geojson) {
+            const features = geojson.features;
+
+            // Extract property keys (column names)
+            const propertyKeys = Object.keys(features[0].properties);
+            propertyKeys.push('geometry');
+
+            // Create CSV rows
+            const rows = features.map(feature => {
+                const properties = feature.properties;
+                const geometry = JSON.stringify(feature.geometry);
+                const row = propertyKeys.map(key => {
+                    return key === 'geometry' ? geometry : properties[key];
+                });
+                return row.join('|');
+            });
+
+            // Create CSV content
+            const csvContent = [propertyKeys.join('|'), ...rows].join('\n');
+            return csvContent;
+        }
+
+        function downloadCsv(content, filename) {
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Example usage
+        const geojson = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [102.0, 0.5]
+                    },
+                    "properties": {
+                        "prop0": "value0"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [
+                            [102.0, 0.0],
+                            [103.0, 1.0],
+                            [104.0, 0.0],
+                            [105.0, 1.0]
+                        ]
+                    },
+                    "properties": {
+                        "prop0": "value0",
+                        "prop1": 0.0
+                    }
+                }
+            ]
+        };
+
+        const csv = geojsonToCsv(geojson);
+        downloadCsv(csv, 'data.csv');
+
+    </script>
+</body>
+
+</html>

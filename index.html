@@ -179,7 +179,7 @@
                 cycleLayer.addGeoJson(cycleCollection);
                 cycleLayer.setStyle({
                     strokeColor: 'green',
-                    strokeWeight: 4
+                    strokeWeight: 2
                 });
                 cycleLayer.setMap(map);
                 const cycleInfo = new google.maps.InfoWindow();
@@ -187,7 +187,7 @@
                     const speedLimit = event.feature.getProperty('speedLimit');
                     const name = event.feature.getProperty('name');
                     const content = `
-                        <div><strong>Name:</strong> ${name}</div>
+                        <div><strong>Name:</strong> Cycle Route No. ${name}</div>
                     `;
                     cycleInfo.setContent(content);
                     cycleInfo.setPosition(event.latLng);
