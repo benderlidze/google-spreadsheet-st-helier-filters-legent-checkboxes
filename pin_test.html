@@ -135,11 +135,11 @@
                 { color: "black", name: "Cemeteries", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1362545516&single=true&output=csv", icon: "icons/grave-2-svgrepo-com.svg" },
                 { color: "green", name: "Parks and Gardens", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1961951523&single=true&output=csv", icon: "icons/park-svgrepo-com.svg" },
                 { color: "gray", name: "Public Toilets", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1160438668&single=true&output=csv", icon: "icons/public-toilet-svgrepo-com.svg" },
-                { name: "Bike Racks", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=460361614&single=true&output=csv", icon: "icons/bicycle-parking-svgrepo-com.svg" },
-                { name: "Disabled Parking Spaces", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1564193663&single=true&output=csv" },
-                { name: "Unloading Bays", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=162926988&single=true&output=csv" },
-                { name: "Resident Parking Zones", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=230637395&single=true&output=csv" },
-                { name: "St Helier Maintained Roads", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=377968935&single=true&output=csv" },
+                { color: "blue", name: "Bike Racks", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=460361614&single=true&output=csv", icon: "icons/bicycle-parking-svgrepo-com.svg" },
+                { color: "green", name: "Disabled Parking Spaces", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1564193663&single=true&output=csv" },
+                { color: "orange", name: "Unloading Bays", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=162926988&single=true&output=csv" },
+                { color: "yellow", name: "Resident Parking Zones", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=230637395&single=true&output=csv" },
+                { color: "blue", name: "St Helier Maintained Roads", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=377968935&single=true&output=csv" },
                 { color: "green", name: "Cycle Routes", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1767825220&single=true&output=csv" },
             ]
 
@@ -164,7 +164,7 @@
 
 
                 //----------------- Cycle -----------------
-                const color = cycleData.color;
+                const cycleDataColor = cycleData.color;
                 const cycleGeojson = cycleData.data.map(item => {
                     return {
                         type: "Feature",
@@ -182,7 +182,7 @@
                 const cycleLayer = new google.maps.Data();
                 cycleLayer.addGeoJson(cycleCollection);
                 cycleLayer.setStyle({
-                    strokeColor: color,
+                    strokeColor: cycleDataColor,
                     strokeWeight: 2
                 });
                 cycleLayer.setMap(map);
@@ -197,10 +197,11 @@
                     cycleInfo.setPosition(event.latLng);
                     cycleInfo.open(map);
                 });
-                const cycleCheck = addToLegend({ color, name: cycleData.name, callback: (checked) => cycleLayer.setMap(checked ? map : null) });
+                const cycleCheck = addToLegend({ color: cycleDataColor, name: cycleData.name, callback: (checked) => cycleLayer.setMap(checked ? map : null) });
                 checkboxes.push(cycleCheck.checkbox);
 
                 //----------------- Roads -----------------
+                const roadsDataColor = roadsData.color;
                 const roadsGeojson = roadsData.data.map(item => {
                     return {
                         type: "Feature",
@@ -218,7 +219,7 @@
                 const roadsLayer = new google.maps.Data();
                 roadsLayer.addGeoJson(roadsCollection);
                 roadsLayer.setStyle({
-                    strokeColor: 'blue',
+                    strokeColor: roadsDataColor,
                     strokeWeight: 2
                 });
                 roadsLayer.setMap(map);
@@ -234,10 +235,11 @@
                     roadsInfo.setPosition(event.latLng);
                     roadsInfo.open(map);
                 });
-                const roadsCheck = addToLegend({ name: roadsData.name, callback: (checked) => roadsLayer.setMap(checked ? map : null) });
+                const roadsCheck = addToLegend({ color: roadsDataColor, name: roadsData.name, callback: (checked) => roadsLayer.setMap(checked ? map : null) });
                 checkboxes.push(roadsCheck.checkbox);
 
                 //----------------- Resident Parking Zones -----------------
+                const residentParkingZonesColor = residentParkingData.color;
                 const residentParkingZonesGeojson = residentParkingData.data.map(item => {
                     return {
                         type: "Feature",
@@ -319,10 +321,11 @@
                     residentParkingInfo.setPosition(event.latLng);
                     residentParkingInfo.open(map);
                 });
-                const residentParkingCheck = addToLegend({ name: residentParkingData.name, callback: (checked) => residentParkingLayer.setMap(checked ? map : null) });
+                const residentParkingCheck = addToLegend({ color: residentParkingZonesColor, name: residentParkingData.name, callback: (checked) => residentParkingLayer.setMap(checked ? map : null) });
                 checkboxes.push(residentParkingCheck.checkbox);
 
                 //----------------- Unloading Bays -----------------
+                const unloadingBaysColor = unloadingBaysData.color;
                 const unloadingBaysGeojson = unloadingBaysData.data.map(item => {
                     return {
                         type: "Feature",
@@ -341,7 +344,7 @@
                 const unloadingBaysLayer = new google.maps.Data();
                 unloadingBaysLayer.addGeoJson(unloadingCollection);
                 unloadingBaysLayer.setStyle({
-                    strokeColor: 'orange',
+                    strokeColor: unloadingBaysColor,
                     strokeWeight: 6
                 });
                 unloadingBaysLayer.setMap(map);
@@ -359,10 +362,11 @@
                     unloadingBaysInfo.setPosition(event.latLng);
                     unloadingBaysInfo.open(map);
                 });
-                const unloadingCheck = addToLegend({ name: unloadingBaysData.name, callback: (checked) => unloadingBaysLayer.setMap(checked ? map : null) });
+                const unloadingCheck = addToLegend({ color: unloadingBaysColor, name: unloadingBaysData.name, callback: (checked) => unloadingBaysLayer.setMap(checked ? map : null) });
                 checkboxes.push(unloadingCheck.checkbox);
 
                 //----------------- Disabled Parking Spaces -----------------
+                const disabledPrakingSpacesColor = disabledPrakingSpacesData.color;
                 const disabledPrakingSpacesGeojson = disabledPrakingSpacesData.data.map(item => {
                     return {
                         type: "Feature",
@@ -381,7 +385,7 @@
                 const disabledPrakingSpacesLayer = new google.maps.Data();
                 disabledPrakingSpacesLayer.addGeoJson(disabledCollection);
                 disabledPrakingSpacesLayer.setStyle({
-                    strokeColor: 'green',
+                    strokeColor: disabledPrakingSpacesColor,
                     strokeWeight: 6
                 });
                 disabledPrakingSpacesLayer.setMap(map);
@@ -399,7 +403,7 @@
                     disabledPrakingSpacesInfo.setPosition(event.latLng);
                     disabledPrakingSpacesInfo.open(map);
                 });
-                const disabledCheck = addToLegend({ name: disabledPrakingSpacesData.name, callback: (checked) => disabledPrakingSpacesLayer.setMap(checked ? map : null) });
+                const disabledCheck = addToLegend({ color: disabledPrakingSpacesColor, name: disabledPrakingSpacesData.name, callback: (checked) => disabledPrakingSpacesLayer.setMap(checked ? map : null) });
                 checkboxes.push(disabledCheck.checkbox);
 
                 //----------------- Defibrillators -----------------
@@ -505,6 +509,7 @@
                 });
                 //----------------- Public Toilets -----------------
                 const bikeRacks = bikeRacksData.data.map(pin => {
+                    const color = bikeRacksData.color;
                     const title = "Public Toilets";
                     const icon = bikeRacksData.icon;
                     const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
@@ -526,7 +531,7 @@
                                 </div>
                             </div>
                             `;
-                    return buildMarker({ icon, pin, title, infoWindowContent })
+                    return buildMarker({ color, icon, pin, title, infoWindowContent })
                 });
                 allMarkers.push({
                     color: bikeRacksData.color,
