@@ -136,7 +136,7 @@
                 { name: "Disabled Parking Spaces", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1564193663&single=true&output=csv" },
                 { name: "Unloading Bays", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=162926988&single=true&output=csv" },
                 { name: "Resident Parking Zones", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=230637395&single=true&output=csv" },
-                { name: "Roads", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=377968935&single=true&output=csv" },
+                { name: "St Helier Maintained Roads", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=377968935&single=true&output=csv" },
                 { name: "Cycle Routes", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1767825220&single=true&output=csv" },
             ]
 
@@ -156,7 +156,7 @@
                 const disabledPrakingSpacesData = results.find(result => result.name === "Disabled Parking Spaces");
                 const unloadingBaysData = results.find(result => result.name === "Unloading Bays");
                 const residentParkingData = results.find(result => result.name === "Resident Parking Zones");
-                const roadsData = results.find(result => result.name === "Roads");
+                const roadsData = results.find(result => result.name === "St Helier Maintained Roads");
                 const cycleData = results.find(result => result.name === "Cycle Routes");
 
 
@@ -215,7 +215,7 @@
                 roadsLayer.addGeoJson(roadsCollection);
                 roadsLayer.setStyle({
                     strokeColor: 'blue',
-                    strokeWeight: 4
+                    strokeWeight: 2
                 });
                 roadsLayer.setMap(map);
                 const roadsInfo = new google.maps.InfoWindow();
