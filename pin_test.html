@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Default Advanced Marker</title>
+    <title>Marker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
     <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
@@ -18,6 +18,9 @@
             height: 100%;
             margin: 0;
             padding: 0;
+
+            font-family: proxima-nova, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+            height: 100%;
         }
 
         #legend {
@@ -51,6 +54,19 @@
             display: flex;
             gap: 10px;
             flex-direction: column;
+        }
+
+        .hide-all {
+            cursor: pointer;
+            /* border: 1px solid #0e69b4; */
+            background-color: #0e69b4;
+            padding: 5px 20px;
+            border-radius: 2px;
+            color: white;
+        }
+
+        .hide-all .active {
+            background-color: gray;
         }
     </style>
 </head>
@@ -97,7 +113,7 @@
             });
 
             //--------------------  HIDE ALL --------------------
-            addToLegend({
+            addToLegendToggleButton({
                 name: "Hide all", callback: (checked) => {
                     checkboxes.forEach(checkbox => {
                         // checkbox.checked = checked;
@@ -630,6 +646,40 @@
 
             div.appendChild(checkbox);
             div.appendChild(colorDiv);
+            div.appendChild(label);
+            legendDiv.appendChild(div);
+
+            return {
+                checkbox,
+            }
+        }
+
+        function addToLegendToggleButton({ name, callback, color, type = "checkbox" }) {
+            const div = document.createElement("div");
+            div.style = `display: flex; align-items: center; gap: 5px`;
+
+            const label = document.createElement("label");
+            label.textContent = name;
+            label.htmlFor = "hide-all";
+            label.className = "hide-all";
+            label.style = `font-size: 14px;`;
+            label.style.cursor = "pointer";
+
+            const checkbox = document.createElement("input");
+            checkbox.id = "hide-all";
+            checkbox.type = "checkbox";
+            checkbox.checked = true;
+            checkbox.style.display = "none";
+            checkbox.addEventListener("change", () => {
+                if (typeof callback === "function") {
+                    callback(checkbox.checked);
+                }
+
+                const checked = checkbox.checked;
+                label.textContent = checked ? "Hide all" : "Show all";
+            });
+
+            div.appendChild(checkbox);
             div.appendChild(label);
             legendDiv.appendChild(div);
 
