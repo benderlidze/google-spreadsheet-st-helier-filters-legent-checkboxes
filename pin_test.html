@@ -15,7 +15,6 @@
 
         html,
         body {
-            height: 100%;
             margin: 0;
             padding: 0;
 
@@ -54,6 +53,7 @@
             display: flex;
             gap: 10px;
             flex-direction: column;
+            min-width: 350px;
         }
 
         .hide-all {
@@ -67,6 +67,30 @@
 
         .hide-all .active {
             background-color: gray;
+        }
+
+        .container-row {
+            display: flex;
+            gap: 10px;
+            flex-direction: row;
+            margin-top: 10px;
+        }
+
+        .infobox-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .gm-style-iw-chr {
+            position: absolute;
+            display: flex;
+            top: 0;
+            right: 0;
+        }
+
+        .gm-style-iw.gm-style-iw-c {
+            padding-top: 14px !important;
         }
     </style>
 </head>
@@ -206,10 +230,20 @@
                 cycleLayer.addListener('click', function (event) {
                     const speedLimit = event.feature.getProperty('speedLimit');
                     const name = event.feature.getProperty('name');
-                    const content = `
-                        <div><strong>Name:</strong> Cycle Route No. ${name}</div>
-                    `;
-                    cycleInfo.setContent(content);
+
+                    const title = cycleData.name;
+                    const infoWindowContent = `
+                            <div class="pin-container">
+                                <div class="description-container">
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">Cycle Route No. ${name}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+
+                    cycleInfo.setContent(infoWindowContent);
                     cycleInfo.setPosition(event.latLng);
                     cycleInfo.open(map);
                 });
@@ -243,11 +277,22 @@
                 roadsLayer.addListener('click', function (event) {
                     const speedLimit = event.feature.getProperty('speedLimit');
                     const name = event.feature.getProperty('name');
-                    const content = `
-                        <div><strong>Name:</strong> ${name}</div>
-                        <div><strong>Speed limit:</strong> ${speedLimit}</div>
-                    `;
-                    roadsInfo.setContent(content);
+
+                    const title = roadsData.name;
+                    const infoWindowContent = `
+                            <div class="pin-container">
+                                <div class="description-container">
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${name}</div>
+                                        <div><strong>Speed limit:</strong> ${speedLimit}</div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+
+                    roadsInfo.setContent(infoWindowContent);
                     roadsInfo.setPosition(event.latLng);
                     roadsInfo.open(map);
                 });
@@ -323,17 +368,28 @@
                     const docSpaces = event.feature.getProperty('docSpaces')
                     const motoSpaces = event.feature.getProperty('motoSpaces')
                     const bicSpaces = event.feature.getProperty('bicSpaces')
-                    const content = `
-                        <div><strong>Name:</strong> ${name}</div>
-                        <div><strong>residents spaces</strong> ${resSpaces}</div>
-                        <div><strong>visitors spaces</strong> ${visSpaces}</div>
-                        <div><strong>disabled parking spaces</strong> ${disSpaces}</div>
-                        <div><strong>unloading bays</strong> ${unldSpaces}</div>
-                        <div><strong>doctors spaces</strong> ${docSpaces}</div>
-                        <div><strong>motorcycles spaces</strong> ${motoSpaces}</div>
-                        <div><strong>bicycles spaces</strong> ${bicSpaces}</div>
-                    `;
-                    residentParkingInfo.setContent(content);
+
+
+                    const title = residentParkingData.name;
+                    const infoWindowContent = `
+                        <div class="pin-container">
+                            <div class="description-container">
+                                <div class="pin-description">
+                                    <div>${title}</div>
+                                    <div class="infobox-name">${name}</div>
+                                    <div><strong>residents spaces</strong> ${resSpaces}</div>
+                                    <div><strong>visitors spaces</strong> ${visSpaces}</div>
+                                    <div><strong>disabled parking spaces</strong> ${disSpaces}</div>
+                                    <div><strong>unloading bays</strong> ${unldSpaces}</div>
+                                    <div><strong>doctors spaces</strong> ${docSpaces}</div>
+                                    <div><strong>motorcycles spaces</strong> ${motoSpaces}</div>
+                                    <div><strong>bicycles spaces</strong> ${bicSpaces}</div>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+
+                    residentParkingInfo.setContent(infoWindowContent);
                     residentParkingInfo.setPosition(event.latLng);
                     residentParkingInfo.open(map);
                 });
@@ -369,12 +425,23 @@
                     const numberOfSpaces = event.feature.getProperty('numberOfSpaces');
                     const name = event.feature.getProperty('name');
                     const rpz = event.feature.getProperty('rpz');
-                    const content = `
-                        <div><strong>Name:</strong> ${name}</div>
-                        <div><strong>Number of spaces:</strong> ${numberOfSpaces}</div>
-                        <div><strong>RPZ:</strong> ${rpz}</div>
-                    `;
-                    unloadingBaysInfo.setContent(content);
+                    const title = unloadingBaysData.name;
+
+                    const infoWindowContent = `
+                            <div class="pin-container">
+                                <div class="description-container">
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${name}</div>
+                                        <div><strong>Number of spaces:</strong> ${numberOfSpaces}</div>
+                                        <div><strong>RPZ:</strong> ${rpz}</div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+
+                    unloadingBaysInfo.setContent(infoWindowContent);
                     unloadingBaysInfo.setPosition(event.latLng);
                     unloadingBaysInfo.open(map);
                 });
@@ -410,12 +477,24 @@
                     const numberOfSpaces = event.feature.getProperty('numberOfSpaces');
                     const name = event.feature.getProperty('name');
                     const rpz = event.feature.getProperty('rpz');
-                    const content = `
-                        <div><strong>Name:</strong> ${name}</div>
-                        <div><strong>Number of spaces:</strong> ${numberOfSpaces}</div>
-                        <div><strong>RPZ:</strong> ${rpz}</div>
-                    `;
-                    disabledPrakingSpacesInfo.setContent(content);
+
+                    console.log('event', event);
+                    const title = disabledPrakingSpacesData.name;
+                    const infoWindowContent = `
+                            <div class="pin-container">
+                                <div class="description-container">
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${name}</div>
+                                        <div><strong>Number of spaces:</strong> ${numberOfSpaces}</div>
+                                        <div><strong>RPZ:</strong> ${rpz}</div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+
+                    disabledPrakingSpacesInfo.setContent(infoWindowContent);
                     disabledPrakingSpacesInfo.setPosition(event.latLng);
                     disabledPrakingSpacesInfo.open(map);
                 });
@@ -428,14 +507,22 @@
                     const title = "Defibrillator";
                     const icon = defibrilatorsData.icon;
                     const color = defibrilatorsData.color;
+
                     const infoWindowContent = `
-                            <div>
-                                <p>${pin.address}</p>
-                                <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
+                              <div class="pin-container">
+                                <div class="description-container">
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        ${pin.address}
+                                        <div class="container-row">
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             `;
 
-                    return buildMarker({ color, icon, pin, title, infoWindowContent })
+                    return buildMarker({ color, icon, pin, title: "", infoWindowContent })
                 });
                 allMarkers.push({
                     color: defibrilatorsData.color,
@@ -447,22 +534,25 @@
                     const color = cemeteriesData.color;
                     const title = "Cemetery";
                     const icon = cemeteriesData.icon;
-                    const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
-                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
+                    const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 200px; height: auto;">` : "";
+                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
                     const infoWindowContent = `
                             <div class="pin-container">
-                                <div><h1>${pin.name}</h1></div>
                                 <div class="description-container">
                                     ${img}
-                                    <div class="pin-description">${pin.description}</div>
-                                </div>
-                                    ${website}
-                                <div>
-                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${pin.name}</div>
+                                        ${pin.description}
+                                        <div class="container-row">
+                                            ${website}
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             `;
-                    return buildMarker({ color, icon, pin, title, infoWindowContent })
+                    return buildMarker({ color, icon, pin, title: "", infoWindowContent })
                 });
                 allMarkers.push({
                     color: cemeteriesData.color,
@@ -474,22 +564,25 @@
                     const color = parksData.color;
                     const title = "Parks and Gardens";
                     const icon = parksData.icon;
-                    const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
-                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
+                    const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 200px; height: auto;">` : "";
+                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
                     const infoWindowContent = `
-                            <div class="pin-container">
-                                <div><h1>${pin.name}</h1></div>
+                              <div class="pin-container">
                                 <div class="description-container">
                                     ${img}
-                                    <div class="pin-description">${pin.description}</div>
-                                </div>
-                                    ${website}
-                                <div>
-                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${pin.name}</div>
+                                        ${pin.description}
+                                        <div class="container-row">
+                                            ${website}
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             `;
-                    return buildMarker({ color, icon, pin, title, infoWindowContent })
+                    return buildMarker({ color, icon, pin, title: "", infoWindowContent })
                 });
                 allMarkers.push({
                     color: parksData.color,
@@ -502,52 +595,60 @@
                     const color = publicToiletsData.color;
                     const icon = publicToiletsData.icon;
                     const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
-                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
+                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
+
                     const infoWindowContent = `
-                            <div class="pin-container">
-                                <div><h1>${pin.name}</h1></div>
+                              <div class="pin-container">
                                 <div class="description-container">
                                     ${img}
-                                    <div class="pin-description">${pin.notes}</div>
-                                </div>
-                                    ${website}
-                                <div>
-                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${pin.name}</div>
+                                        ${pin.notes}
+                                        <div class="container-row">
+                                            ${website}
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             `;
-                    return buildMarker({ color, icon, pin, title, infoWindowContent })
+
+                    return buildMarker({ color, icon, pin, title: "", infoWindowContent })
                 });
                 allMarkers.push({
                     color: publicToiletsData.color,
                     name: publicToiletsData.name,
                     markers: publicToilets
                 });
-                //----------------- Public Toilets -----------------
+                //----------------- Bike Racks -----------------
                 const bikeRacks = bikeRacksData.data.map(pin => {
                     const color = bikeRacksData.color;
-                    const title = "Public Toilets";
+                    const title = "Bike Racks";
                     const icon = bikeRacksData.icon;
                     const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
-                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
+                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
+
                     const infoWindowContent = `
-                            <div class="pin-container">
-                                <div><h1>${pin.name}</h1></div>
+                              <div class="pin-container">
                                 <div class="description-container">
                                     ${img}
                                     <div class="pin-description">
-                                        <b>Location:</b> ${pin.location}<br>
-                                        <b>Maximum capacity:</b> ${pin['maximum capacity']}<br>
-                                        <b>Covered facility:</b> ${pin['covered facility']}<br>
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${pin.name}</div>
+                                            <b>Location:</b> ${pin.location}<br>
+                                            <b>Maximum capacity:</b> ${pin['maximum capacity']}<br>
+                                            <b>Covered facility:</b> ${pin['covered facility']}<br>
+                                        <div class="container-row">
+                                            ${website}
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
+                                        </div>
                                     </div>
-                                </div>
-                                    ${website}
-                                <div>
-                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
                                 </div>
                             </div>
                             `;
-                    return buildMarker({ color, icon, pin, title, infoWindowContent })
+
+                    return buildMarker({ color, icon, pin, title: "", infoWindowContent })
                 });
                 allMarkers.push({
                     color: bikeRacksData.color,
