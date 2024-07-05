@@ -2,9 +2,10 @@
 <html>
 
 <head>
-    <title>Default Advanced Marker</title>
+    <title>Marker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         #map {
@@ -14,9 +15,11 @@
 
         html,
         body {
-            height: 100%;
             margin: 0;
             padding: 0;
+
+            font-family: proxima-nova, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+            height: 100%;
         }
 
         #legend {
@@ -34,6 +37,7 @@
             z-index: 11;
             max-width: 90%;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: none;
         }
 
         .pin-description {
@@ -50,6 +54,65 @@
             display: flex;
             gap: 10px;
             flex-direction: column;
+            min-width: 200px;
+            width: fit-content;
+        }
+
+        .hide-all {
+            cursor: pointer;
+            /* border: 1px solid #0e69b4; */
+            background-color: #0e69b4;
+            padding: 5px 20px;
+            border-radius: 2px;
+            color: white;
+        }
+
+        .hide-all .active {
+            background-color: gray;
+        }
+
+        .container-row {
+            display: flex;
+            gap: 10px;
+            flex-direction: row;
+            margin-top: 10px;
+        }
+
+        .infobox-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .gm-style-iw-chr {
+            position: absolute;
+            display: flex;
+            top: 0;
+            right: 0;
+        }
+
+        .gm-style-iw.gm-style-iw-c {
+            padding-top: 14px !important;
+        }
+
+        #openLegendButton {
+            z-index: 1000;
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background-color: white;
+            padding: 5px;
+            border-radius: 100%;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+
         }
     </style>
 </head>
@@ -57,6 +120,7 @@
 <body>
 
     <div id="legend"></div>
+    <div id="openLegendButton">?</div>
     <div id="map"></div>
 
     <script>
@@ -79,27 +143,47 @@
     </script>
     <script>
         let map;
-        const legendDiv = document.getElementById("legend");
+
+        const allItems = [];
         const allMarkers = [];
         const checkboxes = [];
 
+        const urlQuery = new URLSearchParams(window.location.search);
+        const showLegend = urlQuery.get("legend") === "n" ? false : true;
+        const showLayers = urlQuery.get("layers") !== null ? urlQuery.get("layers").split(",").map(i => i.toLowerCase().trim()) : [];
+
+        const legendDiv = document.getElementById("legend");
+        const openLegendButtonDiv = document.getElementById("openLegendButton");
+        openLegendButtonDiv.addEventListener("click", () => {
+            legendDiv.style.display = "block";
+            openLegendButtonDiv.style.display = "none";
+        });
+        openLegendButtonDiv.style.display = showLegend ? "flex" : "none";
+
+
         async function initMap() {
+
+
+
             // Request needed libraries.
             const { Map, InfoWindow } = await google.maps.importLibrary("maps");
             const { PinElement, AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
+
             map = new Map(document.getElementById("map"), {
-                center: { lat: 49.21219633759323, lng: -2.139867639955886 },
-                zoom: 12,
+                center: { lat: 49.194630601806956, lng: -2.1096383711882383 },
+                zoom: 14,
                 mapId: "4504f8b37365c3d0",
             });
 
             //--------------------  HIDE ALL --------------------
-            addToLegend({
-                name: "Hide all", callback: (checked) => {
+            addToLegendToggleButton({
+                name: "Hide All", callback: (checked) => {
                     checkboxes.forEach(checkbox => {
                         // checkbox.checked = checked;
                         // checkbox.dispatchEvent(new Event("change"));
-                        checkbox.click()
+                        checked ? checkbox.checked = true : checkbox.checked = false;
+                        checkbox.dispatchEvent(new Event("change"));
                     });
                 }
             });
@@ -128,28 +212,38 @@
             mapLayer.setMap(map);
 
             const spreadsheets = [
-                { name: "Defibrillators", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=989595694&single=true&output=csv", icon: "icons/aed-icon.svg" },
-                { name: "Cemeteries", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1362545516&single=true&output=csv", icon: "icons/grave-2-svgrepo-com.svg" },
-                { name: "Parks and Gardens", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1961951523&single=true&output=csv", icon: "icons/park-svgrepo-com.svg" },
-                { name: "Public Toilets", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1160438668&single=true&output=csv", icon: "icons/public-toilet-svgrepo-com.svg" },
-                { name: "Bike Racks", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=460361614&single=true&output=csv", icon: "icons/bicycle-parking-svgrepo-com.svg" },
-                { name: "Disabled Parking Spaces", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1564193663&single=true&output=csv" },
-                { name: "Unloading Bays", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=162926988&single=true&output=csv" },
-                { name: "Resident Parking Zones", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=230637395&single=true&output=csv" },
-                { name: "St Helier Maintained Roads", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=377968935&single=true&output=csv" },
-                { name: "Cycle Routes", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1767825220&single=true&output=csv" },
+                { color: "red", layerName: "defibrillators", name: "Defibrillators", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=989595694&single=true&output=csv", icon: "icons/aed-icon.svg" },
+                { color: "black", layerName: "cemeteries", name: "Cemeteries", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1362545516&single=true&output=csv", icon: "icons/grave-2-svgrepo-com.svg" },
+                { color: "DeepPink", layerName: "monuments", name: "Monuments", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1464952638&single=true&output=csv", icon: "icons/grave-2-svgrepo-com.svg" },
+                { color: "green", layerName: "parks_and_gardens", name: "Parks and Gardens", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1961951523&single=true&output=csv", icon: "icons/park-svgrepo-com.svg" },
+                { color: "gray", layerName: "public_toilets", name: "Public Toilets", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1160438668&single=true&output=csv", icon: "icons/public-toilet-svgrepo-com.svg" },
+                { color: "blue", layerName: "bike_racks", name: "Bike Racks", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=460361614&single=true&output=csv", icon: "icons/bicycle-parking-svgrepo-com.svg" },
+                { color: "navy", layerName: "disabled_parking_spaces", name: "Disabled Parking Spaces", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1564193663&single=true&output=csv" },
+                { color: "orange", layerName: "unloading_bays", name: "Unloading Bays", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=162926988&single=true&output=csv" },
+                { color: "yellow", layerName: "resident_parking_zones", name: "Resident Parking Zones", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=230637395&single=true&output=csv" },
+                { color: "blue", layerName: "st_helier_maintained_roads", name: "St Helier Maintained Roads", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=377968935&single=true&output=csv" },
+                { color: "green", layerName: "cycle_routes", name: "Cycle Routes", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1767825220&single=true&output=csv" },
             ]
 
             //https://developers.google.com/maps/documentation/javascript/reference/info-window#InfoWindowOptions
             const infoWindow = new InfoWindow();
 
             Promise.all(
-                spreadsheets.map(spr => d3.csv(spr.url).then(data => ({ data, name: spr.name, icon: spr.icon })))
+                spreadsheets
+                    .filter(item => {
+                        if (showLayers && showLayers.length > 0) {
+                            return showLayers.includes(item.layerName.toLowerCase());
+                        } else {
+                            return true
+                        }
+                    })
+                    .map(spr => d3.csv(spr.url).then(data => ({ data, name: spr.name, icon: spr.icon, color: spr.color })))
             ).then(results => {
-                console.log(results);
 
-                const defibrilatorsData = results.find(result => result.name === "Defibrillators");
                 const cemeteriesData = results.find(result => result.name === "Cemeteries");
+                const monumentsData = results.find(result => result.name === "Monuments");
+                const cycleData = results.find(result => result.name === "Cycle Routes");
+                const defibrilatorsData = results.find(result => result.name === "Defibrillators");
                 const parksData = results.find(result => result.name === "Parks and Gardens");
                 const publicToiletsData = results.find(result => result.name === "Public Toilets");
                 const bikeRacksData = results.find(result => result.name === "Bike Racks");
@@ -157,379 +251,618 @@
                 const unloadingBaysData = results.find(result => result.name === "Unloading Bays");
                 const residentParkingData = results.find(result => result.name === "Resident Parking Zones");
                 const roadsData = results.find(result => result.name === "St Helier Maintained Roads");
-                const cycleData = results.find(result => result.name === "Cycle Routes");
 
+                //----------------- Bike Racks -----------------
+                if (bikeRacksData) {
+                    const bikeRacks = bikeRacksData.data.map(pin => {
+                        const color = bikeRacksData.color;
+                        const title = "Bike Racks";
+                        const icon = bikeRacksData.icon;
+                        const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
+                        const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
 
-                //----------------- Cycle -----------------
-                const cycleGeojson = cycleData.data.map(item => {
-                    return {
-                        type: "Feature",
-                        properties: {
-                            name: item["name"],
-                            speedLimit: item["speed limit"],
-                        },
-                        geometry: JSON.parse(item["geometry"])
-                    }
-                });
-                const cycleCollection = {
-                    type: "FeatureCollection",
-                    features: cycleGeojson
-                };
-                const cycleLayer = new google.maps.Data();
-                cycleLayer.addGeoJson(cycleCollection);
-                cycleLayer.setStyle({
-                    strokeColor: 'green',
-                    strokeWeight: 2
-                });
-                cycleLayer.setMap(map);
-                const cycleInfo = new google.maps.InfoWindow();
-                cycleLayer.addListener('click', function (event) {
-                    const speedLimit = event.feature.getProperty('speedLimit');
-                    const name = event.feature.getProperty('name');
-                    const content = `
-                        <div><strong>Name:</strong> Cycle Route No. ${name}</div>
-                    `;
-                    cycleInfo.setContent(content);
-                    cycleInfo.setPosition(event.latLng);
-                    cycleInfo.open(map);
-                });
-                const cycleCheck = addToLegend({ name: cycleData.name, callback: (checked) => cycleLayer.setMap(checked ? map : null) });
-                checkboxes.push(cycleCheck.checkbox);
-
-                //----------------- Roads -----------------
-                const roadsGeojson = roadsData.data.map(item => {
-                    return {
-                        type: "Feature",
-                        properties: {
-                            name: item["name"],
-                            speedLimit: item["speed limit"],
-                        },
-                        geometry: JSON.parse(item["geometry"])
-                    }
-                });
-                const roadsCollection = {
-                    type: "FeatureCollection",
-                    features: roadsGeojson
-                };
-                const roadsLayer = new google.maps.Data();
-                roadsLayer.addGeoJson(roadsCollection);
-                roadsLayer.setStyle({
-                    strokeColor: 'blue',
-                    strokeWeight: 2
-                });
-                roadsLayer.setMap(map);
-                const roadsInfo = new google.maps.InfoWindow();
-                roadsLayer.addListener('click', function (event) {
-                    const speedLimit = event.feature.getProperty('speedLimit');
-                    const name = event.feature.getProperty('name');
-                    const content = `
-                        <div><strong>Name:</strong> ${name}</div>
-                        <div><strong>Speed limit:</strong> ${speedLimit}</div>
-                    `;
-                    roadsInfo.setContent(content);
-                    roadsInfo.setPosition(event.latLng);
-                    roadsInfo.open(map);
-                });
-                const roadsCheck = addToLegend({ name: roadsData.name, callback: (checked) => roadsLayer.setMap(checked ? map : null) });
-                checkboxes.push(roadsCheck.checkbox);
-
-                //----------------- Resident Parking Zones -----------------
-                const residentParkingZonesGeojson = residentParkingData.data.map(item => {
-                    return {
-                        type: "Feature",
-                        properties: {
-                            name: item["name"],
-                            resSpaces: item["residents spaces"],
-                            visSpaces: item["visitors spaces"],
-                            disSpaces: item["disabled parking spaces"],
-                            unldSpaces: item["unloading bays"],
-                            docSpaces: item["doctors spaces"],
-                            motoSpaces: item["motorcycles spaces"],
-                            bicSpaces: item["bicycles spaces"],
-                        },
-                        geometry: JSON.parse(item["geometry"])
-                    }
-                });
-                const residentParkingZonesCollection = {
-                    type: "FeatureCollection",
-                    features: residentParkingZonesGeojson
-                };
-                const residentParkingLayer = new google.maps.Data();
-                residentParkingLayer.addGeoJson(residentParkingZonesCollection);
-                residentParkingLayer.setStyle(function (feature) {
-                    const name = feature.getProperty('name');
-                    let strokeColor = 'gray';
-                    let fillColor = 'yellow';
-                    let fillOpacity = 0.6;
-                    console.log('name!!!', feature);
-                    switch (name) {
-                        case "Richmond Road":
-                            strokeColor = 'red';
-                            fillColor = '#fbd2d2';
-                            break;
-                        case `St.Mark's Road`:
-                            strokeColor = 'blue';
-                            fillColor = '#c1e4f0';
-                            break;
-                        case `St Thomas'`:
-                            strokeColor = 'green';
-                            fillColor = '#e8f0cb';
-                            break;
-                        case `Cheapside'`:
-                            strokeColor = 'green';
-                            fillColor = 'green';
-                            break;
-                    }
-
-                    return {
-                        strokeColor: strokeColor,
-                        strokeWeight: 2,
-                        fillColor: fillColor,
-                        fillOpacity: fillOpacity
-                    };
-                });
-                residentParkingLayer.setMap(map);
-
-                const residentParkingInfo = new google.maps.InfoWindow();
-                residentParkingLayer.addListener('click', function (event) {
-                    const numberOfSpaces = event.feature.getProperty('numberOfSpaces');
-                    const name = event.feature.getProperty('name');
-                    const resSpaces = event.feature.getProperty('resSpaces')
-                    const visSpaces = event.feature.getProperty('visSpaces')
-                    const disSpaces = event.feature.getProperty('disSpaces')
-                    const unldSpaces = event.feature.getProperty('unldSpaces')
-                    const docSpaces = event.feature.getProperty('docSpaces')
-                    const motoSpaces = event.feature.getProperty('motoSpaces')
-                    const bicSpaces = event.feature.getProperty('bicSpaces')
-                    const content = `
-                        <div><strong>Name:</strong> ${name}</div>
-                        <div><strong>residents spaces</strong> ${resSpaces}</div>
-                        <div><strong>visitors spaces</strong> ${visSpaces}</div>
-                        <div><strong>disabled parking spaces</strong> ${disSpaces}</div>
-                        <div><strong>unloading bays</strong> ${unldSpaces}</div>
-                        <div><strong>doctors spaces</strong> ${docSpaces}</div>
-                        <div><strong>motorcycles spaces</strong> ${motoSpaces}</div>
-                        <div><strong>bicycles spaces</strong> ${bicSpaces}</div>
-                    `;
-                    residentParkingInfo.setContent(content);
-                    residentParkingInfo.setPosition(event.latLng);
-                    residentParkingInfo.open(map);
-                });
-                const residentParkingCheck = addToLegend({ name: residentParkingData.name, callback: (checked) => residentParkingLayer.setMap(checked ? map : null) });
-                checkboxes.push(residentParkingCheck.checkbox);
-
-                //----------------- Unloading Bays -----------------
-                const unloadingBaysGeojson = unloadingBaysData.data.map(item => {
-                    return {
-                        type: "Feature",
-                        properties: {
-                            name: item["name"],
-                            rpz: item["corresponding rpz"],
-                            numberOfSpaces: item["number of spaces"],
-                        },
-                        geometry: JSON.parse(item["geometry"])
-                    }
-                });
-                const unloadingCollection = {
-                    type: "FeatureCollection",
-                    features: unloadingBaysGeojson
-                };
-                const unloadingBaysLayer = new google.maps.Data();
-                unloadingBaysLayer.addGeoJson(unloadingCollection);
-                unloadingBaysLayer.setStyle({
-                    strokeColor: 'orange',
-                    strokeWeight: 6
-                });
-                unloadingBaysLayer.setMap(map);
-                const unloadingBaysInfo = new google.maps.InfoWindow();
-                unloadingBaysLayer.addListener('click', function (event) {
-                    const numberOfSpaces = event.feature.getProperty('numberOfSpaces');
-                    const name = event.feature.getProperty('name');
-                    const rpz = event.feature.getProperty('rpz');
-                    const content = `
-                        <div><strong>Name:</strong> ${name}</div>
-                        <div><strong>Number of spaces:</strong> ${numberOfSpaces}</div>
-                        <div><strong>RPZ:</strong> ${rpz}</div>
-                    `;
-                    unloadingBaysInfo.setContent(content);
-                    unloadingBaysInfo.setPosition(event.latLng);
-                    unloadingBaysInfo.open(map);
-                });
-                const unloadingCheck = addToLegend({ name: unloadingBaysData.name, callback: (checked) => unloadingBaysLayer.setMap(checked ? map : null) });
-                checkboxes.push(unloadingCheck.checkbox);
-
-                //----------------- Disabled Parking Spaces -----------------
-                const disabledPrakingSpacesGeojson = disabledPrakingSpacesData.data.map(item => {
-                    return {
-                        type: "Feature",
-                        properties: {
-                            name: item["name"],
-                            rpz: item["corresponding rpz"],
-                            numberOfSpaces: item["number of spaces"],
-                        },
-                        geometry: JSON.parse(item["geometry"])
-                    }
-                });
-                const disabledCollection = {
-                    type: "FeatureCollection",
-                    features: disabledPrakingSpacesGeojson
-                };
-                const disabledPrakingSpacesLayer = new google.maps.Data();
-                disabledPrakingSpacesLayer.addGeoJson(disabledCollection);
-                disabledPrakingSpacesLayer.setStyle({
-                    strokeColor: 'green',
-                    strokeWeight: 6
-                });
-                disabledPrakingSpacesLayer.setMap(map);
-                const disabledPrakingSpacesInfo = new google.maps.InfoWindow();
-                disabledPrakingSpacesLayer.addListener('click', function (event) {
-                    const numberOfSpaces = event.feature.getProperty('numberOfSpaces');
-                    const name = event.feature.getProperty('name');
-                    const rpz = event.feature.getProperty('rpz');
-                    const content = `
-                        <div><strong>Name:</strong> ${name}</div>
-                        <div><strong>Number of spaces:</strong> ${numberOfSpaces}</div>
-                        <div><strong>RPZ:</strong> ${rpz}</div>
-                    `;
-                    disabledPrakingSpacesInfo.setContent(content);
-                    disabledPrakingSpacesInfo.setPosition(event.latLng);
-                    disabledPrakingSpacesInfo.open(map);
-                });
-                const disabledCheck = addToLegend({ name: disabledPrakingSpacesData.name, callback: (checked) => disabledPrakingSpacesLayer.setMap(checked ? map : null) });
-                checkboxes.push(disabledCheck.checkbox);
-
-                //----------------- Defibrillators -----------------
-                const defibrilatorsMarkers = defibrilatorsData.data.map(pin => {
-                    const title = "Defibrillator";
-                    const icon = defibrilatorsData.icon;
-                    const infoWindowContent = `
-                            <div>
-                                <p>${pin.address}</p>
-                                <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
-                            </div>
-                            `;
-
-                    return buildMarker({ icon, pin, title, infoWindowContent })
-                });
-                allMarkers.push({
-                    name: defibrilatorsData.name,
-                    markers: defibrilatorsMarkers
-                });
-                //----------------- Cemeteries -----------------
-                const cemeteriesMarkers = cemeteriesData.data.map(pin => {
-                    const title = "Cemetery";
-                    const icon = cemeteriesData.icon;
-                    const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
-                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
-                    const infoWindowContent = `
-                            <div class="pin-container">
-                                <div><h1>${pin.name}</h1></div>
-                                <div class="description-container">
-                                    ${img}
-                                    <div class="pin-description">${pin.description}</div>
-                                </div>
-                                    ${website}
-                                <div>
-                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
-                                </div>
-                            </div>
-                            `;
-                    return buildMarker({ icon, pin, title, infoWindowContent })
-                });
-                allMarkers.push({
-                    name: cemeteriesData.name,
-                    markers: cemeteriesMarkers
-                });
-                //----------------- Parks and Gardens -----------------
-                const parksMarkers = parksData.data.map(pin => {
-                    const title = "Parks and Gardens";
-                    const icon = parksData.icon;
-                    const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
-                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
-                    const infoWindowContent = `
-                            <div class="pin-container">
-                                <div><h1>${pin.name}</h1></div>
-                                <div class="description-container">
-                                    ${img}
-                                    <div class="pin-description">${pin.description}</div>
-                                </div>
-                                    ${website}
-                                <div>
-                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
-                                </div>
-                            </div>
-                            `;
-                    return buildMarker({ icon, pin, title, infoWindowContent })
-                });
-                allMarkers.push({
-                    name: parksData.name,
-                    markers: parksMarkers
-                });
-                //----------------- Public Toilets -----------------
-                const publicToilets = publicToiletsData.data.map(pin => {
-                    const title = "Public Toilets";
-                    const icon = publicToiletsData.icon;
-                    const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
-                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
-                    const infoWindowContent = `
-                            <div class="pin-container">
-                                <div><h1>${pin.name}</h1></div>
-                                <div class="description-container">
-                                    ${img}
-                                    <div class="pin-description">${pin.notes}</div>
-                                </div>
-                                    ${website}
-                                <div>
-                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
-                                </div>
-                            </div>
-                            `;
-                    return buildMarker({ icon, pin, title, infoWindowContent })
-                });
-                allMarkers.push({
-                    name: publicToiletsData.name,
-                    markers: publicToilets
-                });
-                //----------------- Public Toilets -----------------
-                const bikeRacks = bikeRacksData.data.map(pin => {
-                    const title = "Public Toilets";
-                    const icon = bikeRacksData.icon;
-                    const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
-                    const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">More Details</a></div>` : "";
-                    const infoWindowContent = `
-                            <div class="pin-container">
-                                <div><h1>${pin.name}</h1></div>
+                        const infoWindowContent = `
+                              <div class="pin-container">
                                 <div class="description-container">
                                     ${img}
                                     <div class="pin-description">
-                                        <b>Location:</b> ${pin.location}<br>
-                                        <b>Maximum capacity:</b> ${pin['maximum capacity']}<br>
-                                        <b>Covered facility:</b> ${pin['covered facility']}<br>
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${pin.name}</div>
+                                            <b>Location:</b> ${pin.location}<br>
+                                            <b>Maximum capacity:</b> ${pin['maximum capacity']}<br>
+                                            <b>Covered facility:</b> ${pin['covered facility']}<br>
+                                        <div class="container-row">
+                                            ${website}
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
+                                        </div>
                                     </div>
-                                </div>
-                                    ${website}
-                                <div>
-                                    <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">View on Google Maps</a>
                                 </div>
                             </div>
                             `;
-                    return buildMarker({ icon, pin, title, infoWindowContent })
-                });
-                allMarkers.push({
-                    name: bikeRacksData.name,
-                    markers: bikeRacks
-                });
+
+                        return buildMarker({ color, icon, pin, title: "", infoWindowContent })
+                    });
+
+                    allItems.push({
+                        legendLineHeight: "12px",
+                        color: bikeRacksData.color,
+                        name: bikeRacksData.name,
+                        callback: (checked) => {
+                            bikeRacks.forEach(marker => {
+                                marker.setMap(checked ? map : null);
+                            });
+                        }
+                    });
 
 
-                addLegend(allMarkers);
+
+                }
+
+                //----------------- Cemeteries -----------------
+                if (cemeteriesData) {
+                    const cemeteriesMarkers = cemeteriesData.data.map(pin => {
+                        const color = cemeteriesData.color;
+                        const title = "Cemeteries";
+                        const icon = cemeteriesData.icon;
+                        const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 200px; height: auto;">` : "";
+                        const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
+                        const infoWindowContent = `
+                            <div class="pin-container">
+                                <div class="description-container">
+                                    ${img}
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${pin.name}</div>
+                                        ${pin.description}
+                                        <div class="container-row">
+                                            ${website}
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+                        return buildMarker({ color, icon, pin, title: "", infoWindowContent })
+                    });
+
+                    allItems.push({
+                        legendLineHeight: "12px",
+                        color: cemeteriesData.color,
+                        name: cemeteriesData.name,
+                        callback: (checked) => {
+                            cemeteriesMarkers.forEach(marker => {
+                                marker.setMap(checked ? map : null);
+                            });
+                        }
+                    });
+
+                }
+
+                //----------------- Monuments -----------------
+                if (monumentsData) {
+                    console.log('monumentsData', monumentsData);
+                    const monumentsMarkers = monumentsData.data.map(pin => {
+                        const color = monumentsData.color;
+                        const title = "Monument";
+                        const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 200px; height: auto;">` : "";
+                        const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
+                        const infoWindowContent = `
+                            <div class="pin-container">
+                                <div class="description-container">
+                                    ${img}
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${pin.name}</div>
+                                        ${pin.description}
+                                        <div class="container-row">
+                                            ${website}
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+                        return buildMarker({ color, icon: "", pin, title: "", infoWindowContent })
+                    });
+
+                    allItems.push({
+                        legendLineHeight: "12px",
+                        color: monumentsData.color,
+                        name: monumentsData.name,
+                        callback: (checked) => {
+                            monumentsMarkers.forEach(marker => {
+                                marker.setMap(checked ? map : null);
+                            });
+                        }
+                    });
+
+                }
+
+                //----------------- Cycle -----------------
+                if (cycleData) {
+                    const cycleDataColor = cycleData.color;
+                    const cycleGeojson = cycleData.data.map(item => {
+                        return {
+                            type: "Feature",
+                            properties: {
+                                name: item["name"],
+                                speedLimit: item["speed limit"],
+                            },
+                            geometry: JSON.parse(item["geometry"])
+                        }
+                    });
+                    const cycleCollection = {
+                        type: "FeatureCollection",
+                        features: cycleGeojson
+                    };
+                    const cycleLayer = new google.maps.Data();
+                    cycleLayer.addGeoJson(cycleCollection);
+                    cycleLayer.setStyle({
+                        strokeColor: cycleDataColor,
+                        strokeWeight: 2,
+                        clickable: false  // This disables interactivity
+                    });
+                    cycleLayer.setMap(map);
+                    const cycleInfo = new google.maps.InfoWindow();
+                    cycleLayer.addListener('click', function (event) {
+                        const speedLimit = event.feature.getProperty('speedLimit');
+                        const name = event.feature.getProperty('name');
+
+                        const title = cycleData.name;
+                        const infoWindowContent = `
+                            <div class="pin-container">
+                                <div class="description-container">
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">Cycle Route No. ${name}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+
+                        cycleInfo.setContent(infoWindowContent);
+                        cycleInfo.setPosition(event.latLng);
+                        cycleInfo.open(map);
+                    });
+
+
+                    //const cycleCheck = addToLegend({ legendLineHeight: "line", color: cycleDataColor, name: cycleData.name, callback: (checked) => cycleLayer.setMap(checked ? map : null) });
+                    //checkboxes.push(cycleCheck.checkbox);
+
+
+                    allItems.push({
+                        legendLineHeight: "3px",
+                        color: cycleDataColor,
+                        name: cycleData.name,
+                        callback: (checked) => cycleLayer.setMap(checked ? map : null)
+                    });
+
+                }
+
+                //----------------- Roads -----------------
+                if (roadsData) {
+                    const roadsDataColor = roadsData.color;
+                    const roadsGeojson = roadsData.data.map(item => {
+                        return {
+                            type: "Feature",
+                            properties: {
+                                name: item["name"],
+                                speedLimit: item["speed limit"],
+                            },
+                            geometry: JSON.parse(item["geometry"])
+                        }
+                    });
+                    const roadsCollection = {
+                        type: "FeatureCollection",
+                        features: roadsGeojson
+                    };
+                    const roadsLayer = new google.maps.Data();
+                    roadsLayer.addGeoJson(roadsCollection);
+                    roadsLayer.setStyle({
+                        strokeColor: roadsDataColor,
+                        strokeWeight: 2
+                    });
+                    roadsLayer.setMap(map);
+                    const roadsInfo = new google.maps.InfoWindow();
+                    roadsLayer.addListener('click', function (event) {
+                        const speedLimit = event.feature.getProperty('speedLimit');
+                        const name = event.feature.getProperty('name');
+
+                        const title = roadsData.name;
+                        const infoWindowContent = `
+                            <div class="pin-container">
+                                <div class="description-container">
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${name}</div>
+                                        <div><strong>Speed limit:</strong> ${speedLimit}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+
+                        roadsInfo.setContent(infoWindowContent);
+                        roadsInfo.setPosition(event.latLng);
+                        roadsInfo.open(map);
+                    });
+                    // const roadsCheck = addToLegend({ legendLineHeight: "line", color: roadsDataColor, name: roadsData.name, callback: (checked) => roadsLayer.setMap(checked ? map : null) });
+                    // checkboxes.push(roadsCheck.checkbox);
+
+                    allItems.push({
+                        legendLineHeight: "3px",
+                        color: roadsDataColor,
+                        name: roadsData.name,
+                        callback: (checked) => roadsLayer.setMap(checked ? map : null)
+                    });
+                }
+
+                //----------------- Resident Parking Zones -----------------
+                if (residentParkingData) {
+                    const residentParkingZonesColor = residentParkingData.color;
+                    const residentParkingZonesGeojson = residentParkingData.data.map(item => {
+                        return {
+                            type: "Feature",
+                            properties: {
+                                name: item["name"],
+                                resSpaces: item["residents spaces"],
+                                visSpaces: item["visitors spaces"],
+                                disSpaces: item["disabled parking spaces"],
+                                unldSpaces: item["unloading bays"],
+                                docSpaces: item["doctors spaces"],
+                                motoSpaces: item["motorcycles spaces"],
+                                bicSpaces: item["bicycles spaces"],
+                            },
+                            geometry: JSON.parse(item["geometry"])
+                        }
+                    });
+                    const residentParkingZonesCollection = {
+                        type: "FeatureCollection",
+                        features: residentParkingZonesGeojson
+                    };
+                    const residentParkingLayer = new google.maps.Data();
+                    residentParkingLayer.addGeoJson(residentParkingZonesCollection);
+                    residentParkingLayer.setStyle(function (feature) {
+                        const name = feature.getProperty('name');
+                        let strokeColor = 'gray';
+                        let fillColor = 'yellow';
+                        let fillOpacity = 0.6;
+                        console.log('name!!!', feature);
+                        switch (name) {
+                            case "Richmond Road":
+                                strokeColor = 'red';
+                                fillColor = '#fbd2d2';
+                                break;
+                            case `St.Mark's Road`:
+                                strokeColor = 'blue';
+                                fillColor = '#c1e4f0';
+                                break;
+                            case `St Thomas'`:
+                                strokeColor = 'green';
+                                fillColor = '#e8f0cb';
+                                break;
+                            case `Cheapside'`:
+                                strokeColor = 'green';
+                                fillColor = 'green';
+                                break;
+                        }
+
+                        return {
+                            strokeColor: strokeColor,
+                            strokeWeight: 2,
+                            fillColor: fillColor,
+                            fillOpacity: fillOpacity
+                        };
+                    });
+                    residentParkingLayer.setMap(map);
+
+                    const residentParkingInfo = new google.maps.InfoWindow();
+                    residentParkingLayer.addListener('click', function (event) {
+                        const numberOfSpaces = event.feature.getProperty('numberOfSpaces');
+                        const name = event.feature.getProperty('name');
+                        const resSpaces = event.feature.getProperty('resSpaces')
+                        const visSpaces = event.feature.getProperty('visSpaces')
+                        const disSpaces = event.feature.getProperty('disSpaces')
+                        const unldSpaces = event.feature.getProperty('unldSpaces')
+                        const docSpaces = event.feature.getProperty('docSpaces')
+                        const motoSpaces = event.feature.getProperty('motoSpaces')
+                        const bicSpaces = event.feature.getProperty('bicSpaces')
+
+
+                        const title = residentParkingData.name;
+                        const infoWindowContent = `
+                        <div class="pin-container">
+                            <div class="description-container">
+                                <div class="pin-description">
+                                    <div>${title}</div>
+                                    <div class="infobox-name">${name}</div>
+                                    <div><strong>residents spaces</strong> ${resSpaces}</div>
+                                    <div><strong>visitors spaces</strong> ${visSpaces}</div>
+                                    <div><strong>disabled parking spaces</strong> ${disSpaces}</div>
+                                    <div><strong>unloading bays</strong> ${unldSpaces}</div>
+                                    <div><strong>doctors spaces</strong> ${docSpaces}</div>
+                                    <div><strong>motorcycles spaces</strong> ${motoSpaces}</div>
+                                    <div><strong>bicycles spaces</strong> ${bicSpaces}</div>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+
+                        residentParkingInfo.setContent(infoWindowContent);
+                        residentParkingInfo.setPosition(event.latLng);
+                        residentParkingInfo.open(map);
+                    });
+
+
+                    // const residentParkingCheck = addToLegend({ legendLineHeight: "line", color: residentParkingZonesColor, name: residentParkingData.name, callback: (checked) => residentParkingLayer.setMap(checked ? map : null) });
+                    // checkboxes.push(residentParkingCheck.checkbox);
+
+                    allItems.push({
+                        border: "1px solid gray",
+                        legendLineHeight: "12px",
+                        color: residentParkingZonesColor,
+                        name: residentParkingData.name,
+                        callback: (checked) => residentParkingLayer.setMap(checked ? map : null)
+                    });
+                }
+
+                //----------------- Unloading Bays -----------------
+                if (unloadingBaysData) {
+                    const unloadingBaysColor = unloadingBaysData.color;
+                    const unloadingBaysGeojson = unloadingBaysData.data.map(item => {
+                        return {
+                            type: "Feature",
+                            properties: {
+                                name: item["name"],
+                                rpz: item["corresponding rpz"],
+                                numberOfSpaces: item["number of spaces"],
+                            },
+                            geometry: JSON.parse(item["geometry"])
+                        }
+                    });
+                    const unloadingCollection = {
+                        type: "FeatureCollection",
+                        features: unloadingBaysGeojson
+                    };
+                    const unloadingBaysLayer = new google.maps.Data();
+                    unloadingBaysLayer.addGeoJson(unloadingCollection);
+                    unloadingBaysLayer.setStyle({
+                        strokeColor: unloadingBaysColor,
+                        strokeWeight: 6
+                    });
+                    unloadingBaysLayer.setMap(map);
+                    const unloadingBaysInfo = new google.maps.InfoWindow();
+                    unloadingBaysLayer.addListener('click', function (event) {
+                        const numberOfSpaces = event.feature.getProperty('numberOfSpaces');
+                        const name = event.feature.getProperty('name');
+                        const rpz = event.feature.getProperty('rpz');
+                        const title = unloadingBaysData.name;
+
+                        const infoWindowContent = `
+                            <div class="pin-container">
+                                <div class="description-container">
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${name}</div>
+                                        <div><strong>Number of spaces:</strong> ${numberOfSpaces}</div>
+                                        <div><strong>RPZ:</strong> ${rpz}</div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+
+                        unloadingBaysInfo.setContent(infoWindowContent);
+                        unloadingBaysInfo.setPosition(event.latLng);
+                        unloadingBaysInfo.open(map);
+                    });
+
+                    // const unloadingCheck = addToLegend({ legendLineHeight: "line", color: unloadingBaysColor, name: unloadingBaysData.name, callback: (checked) => unloadingBaysLayer.setMap(checked ? map : null) });
+                    // checkboxes.push(unloadingCheck.checkbox);
+
+                    allItems.push({
+                        legendLineHeight: "5px",
+                        color: unloadingBaysColor,
+                        name: unloadingBaysData.name,
+                        callback: (checked) => unloadingBaysLayer.setMap(checked ? map : null)
+                    });
+                }
+                //----------------- Disabled Parking Spaces -----------------
+                if (disabledPrakingSpacesData) {
+                    const disabledPrakingSpacesColor = disabledPrakingSpacesData.color;
+                    const disabledPrakingSpacesGeojson = disabledPrakingSpacesData.data.map(item => {
+                        return {
+                            type: "Feature",
+                            properties: {
+                                name: item["name"],
+                                rpz: item["corresponding rpz"],
+                                numberOfSpaces: item["number of spaces"],
+                            },
+                            geometry: JSON.parse(item["geometry"])
+                        }
+                    });
+                    const disabledCollection = {
+                        type: "FeatureCollection",
+                        features: disabledPrakingSpacesGeojson
+                    };
+                    const disabledPrakingSpacesLayer = new google.maps.Data();
+                    disabledPrakingSpacesLayer.addGeoJson(disabledCollection);
+                    disabledPrakingSpacesLayer.setStyle({
+                        strokeColor: disabledPrakingSpacesColor,
+                        strokeWeight: 6
+                    });
+                    disabledPrakingSpacesLayer.setMap(map);
+                    const disabledPrakingSpacesInfo = new google.maps.InfoWindow();
+                    disabledPrakingSpacesLayer.addListener('click', function (event) {
+                        const numberOfSpaces = event.feature.getProperty('numberOfSpaces');
+                        const name = event.feature.getProperty('name');
+                        const rpz = event.feature.getProperty('rpz');
+
+                        console.log('event', event);
+                        const title = disabledPrakingSpacesData.name;
+                        const infoWindowContent = `
+                            <div class="pin-container">
+                                <div class="description-container">
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${name}</div>
+                                        <div><strong>Number of spaces:</strong> ${numberOfSpaces}</div>
+                                        <div><strong>RPZ:</strong> ${rpz}</div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+
+                        disabledPrakingSpacesInfo.setContent(infoWindowContent);
+                        disabledPrakingSpacesInfo.setPosition(event.latLng);
+                        disabledPrakingSpacesInfo.open(map);
+                    });
+
+                    // const disabledCheck = addToLegend({ legendLineHeight: "line", color: disabledPrakingSpacesColor, name: disabledPrakingSpacesData.name, callback: (checked) => disabledPrakingSpacesLayer.setMap(checked ? map : null) });
+                    // checkboxes.push(disabledCheck.checkbox);
+
+                    allItems.push({
+                        legendLineHeight: "5px",
+                        color: disabledPrakingSpacesColor,
+                        name: disabledPrakingSpacesData.name,
+                        callback: (checked) => disabledPrakingSpacesLayer.setMap(checked ? map : null)
+                    });
+                }
+                //----------------- Defibrillators -----------------
+                if (defibrilatorsData) {
+                    const defibrilatorsMarkers = defibrilatorsData.data.map(pin => {
+                        const title = "Defibrillators";
+                        const icon = defibrilatorsData.icon;
+                        const color = defibrilatorsData.color;
+                        const name = pin["name"];
+
+                        const infoWindowContent = `
+                              <div class="pin-container">
+                                <div class="description-container">
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${name}</div>
+                                        ${pin.address}
+                                        <div class="container-row">
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        return buildMarker({ color, icon, pin, title: "", infoWindowContent })
+                    });
+                    // allMarkers.push({
+                    //     color: defibrilatorsData.color,
+                    //     name: defibrilatorsData.name,
+                    //     markers: defibrilatorsMarkers
+                    // });
+
+                    allItems.push({
+                        legendLineHeight: "12px",
+                        color: defibrilatorsData.color,
+                        name: defibrilatorsData.name,
+                        callback: (checked) => {
+                            defibrilatorsMarkers.forEach(marker => {
+                                marker.setMap(checked ? map : null);
+                            });
+                        }
+                    });
+                }
+
+                //----------------- Parks and Gardens -----------------
+                if (parksData) {
+                    const parksMarkers = parksData.data.map(pin => {
+                        const color = parksData.color;
+                        const title = "Parks and Gardens";
+                        const icon = parksData.icon;
+                        const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 200px; height: auto;">` : "";
+                        const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
+                        const infoWindowContent = `
+                              <div class="pin-container">
+                                <div class="description-container">
+                                    ${img}
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${pin.name}</div>
+                                        ${pin.description}
+                                        <div class="container-row">
+                                            ${website}
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+                        return buildMarker({ color, icon, pin, title: "", infoWindowContent })
+                    });
+
+                    allItems.push({
+                        legendLineHeight: "12px",
+                        color: parksData.color,
+                        name: parksData.name,
+                        callback: (checked) => {
+                            parksMarkers.forEach(marker => {
+                                marker.setMap(checked ? map : null);
+                            });
+                        }
+                    });
+
+                }
+                //----------------- Public Toilets -----------------
+                if (publicToiletsData) {
+                    const publicToilets = publicToiletsData.data.map(pin => {
+                        const title = "Public Toilets";
+                        const color = publicToiletsData.color;
+                        const icon = publicToiletsData.icon;
+                        const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
+                        const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
+
+                        const infoWindowContent = `
+                              <div class="pin-container">
+                                <div class="description-container">
+                                    ${img}
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${pin.name}</div>
+                                        ${pin.notes}
+                                        <div class="container-row">
+                                            ${website}
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+
+                        return buildMarker({ color, icon, pin, title: "", infoWindowContent })
+                    });
+
+                    allItems.push({
+                        legendLineHeight: "12px",
+                        color: publicToiletsData.color,
+                        name: publicToiletsData.name,
+                        callback: (checked) => {
+                            publicToilets.forEach(marker => {
+                                marker.setMap(checked ? map : null);
+                            });
+                        }
+                    });
+                }
+
+                addLegend(allItems);
+
             });
 
-            function buildMarker({ icon, pin, title, infoWindowContent }) {
+
+
+            function buildMarker({ icon, pin, color = "blue", title, infoWindowContent }) {
                 const svgUrl = icon;
                 const marker = new AdvancedMarkerElement({
                     map,
                     position: { lat: +pin.latitude, lng: +pin.longitude },
-                    content: buildContent(svgUrl),
+                    content: buildContent({ color }),
                     title: pin.info,
                     gmpClickable: true,
                 });
@@ -548,40 +881,22 @@
                 return marker;
             }
 
-
-            function buildDefibrilatorsMarker({ icon, pin }) {
-                const svgUrl = icon;
-                const marker = new AdvancedMarkerElement({
-                    map,
-                    position: { lat: +pin.latitude, lng: +pin.longitude },
-                    content: buildContent(svgUrl),
-                    title: pin.info,
-                    gmpClickable: true,
-                });
-                marker.addListener("click", ({ domEvent, latLng }) => {
-                    const { target } = domEvent;
-                    infoWindow.close();
-                    const div = document.createElement("div");
-                    div.style = `font-weight:bold;font-size: 16px;`;
-                    div.innerHTML = "Defibrillator";
-                    infoWindow.setOptions({
-                        headerContent: div,
-                    });
-                    infoWindow.setContent(`
-                            <div>
-                                <p>${pin.address}</p>
-                                <a href="https://www.google.com/maps/dir/?api=1&destination=${latLng.lat()},${latLng.lng()}" target="_blank">View on Google Maps</a>
-                            </div>
-                            `);
-                    infoWindow.open(marker.map, marker);
-                });
-                return marker;
-            }
         }
         initMap();
 
-
-
+        function buildContent({ color }) {
+            console.log('color', color);
+            const content = document.createElement("div");
+            content.classList.add("property");
+            content.innerHTML = `
+                <div class="icon" style="width:25px; height: 25px;">
+                    <svg width="25px" height="25px" viewBox="-3 0 24 24" id="meteor-icon-kit__solid-map-marker" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" stroke="white" stroke-width="1" clip-rule="evenodd" d="M9.7685 23.0866C9.7296 23.1333 9.6866 23.1763 9.6399 23.2152C9.2154 23.5686 8.5849 23.511 8.2315 23.0866C2.74384 16.4959 0 11.6798 0 8.63811C0 3.86741 4.2293 0 9 0C13.7707 0 18 3.86741 18 8.63811C18 11.6798 15.2562 16.4959 9.7685 23.0866zM9 12C10.6569 12 12 10.6569 12 9C12 7.34315 10.6569 6 9 6C7.3431 6 6 7.34315 6 9C6 10.6569 7.3431 12 9 12z" fill="${color}"/>
+                    </svg>
+                </div>
+                `;
+            return content;
+        }
 
         function toggleHighlight(markerView, property) {
             console.log('markerView', markerView);
@@ -594,38 +909,23 @@
             }
         }
 
-        function buildContent(icon) {
-            const content = document.createElement("div");
-            content.classList.add("property");
-            content.innerHTML = `
-                <div class="icon" style="width:30px; height: 30px;">
-                    <img src="${icon}" >
-                </div>
-              
-                `;
-            return content;
-        }
-
-        function addLegend(markersArray) {
-            markersArray.forEach(element => {
-                const m = addToLegend({
-                    name: element.name, callback: (checked) => {
-                        element.markers.forEach(marker => {
-                            marker.setMap(checked ? map : null);
-                        });
-                    }
+        function addLegend(items) {
+            items
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .forEach(element => {
+                    const m = addToLegend(element);
+                    checkboxes.push(m.checkbox);
                 });
-                checkboxes.push(m.checkbox);
-            });
         }
 
-        function addToLegend({ name, callback }) {
+        function addToLegend({ name, callback, color, legendLineHeight = "10px", border }) {
             const div = document.createElement("div");
-            div.style = `display: flex; align-items: center; gap: 5px`;
+            div.style = `display: flex; align-items: center; gap: 7px`;
 
             const checkbox = document.createElement("input");
             checkbox.type = "checkbox";
             checkbox.checked = true;
+            checkbox.id = name;
             checkbox.addEventListener("change", () => {
                 if (typeof callback === "function") {
                     callback(checkbox.checked);
@@ -633,8 +933,16 @@
             });
             const label = document.createElement("label");
             label.textContent = name;
-            label.style = `font-size: 14px;`;
+            label.htmlFor = name;
+            label.style = `font-size: 15px; cursor: pointer;`;
+
+            const colorDiv = document.createElement("div");
+            const height = legendLineHeight;
+            const borderDiv = border ? border : "none";
+            colorDiv.style = `box-sizing: border-box; border:${borderDiv}; width: 12px; height: ${height}; background-color: ${color}; border-radius: 2px;`;
+
             div.appendChild(checkbox);
+            div.appendChild(colorDiv);
             div.appendChild(label);
             legendDiv.appendChild(div);
 
@@ -642,6 +950,53 @@
                 checkbox,
             }
         }
+
+        function addToLegendToggleButton({ name, callback, color, type = "checkbox" }) {
+
+            const div = document.createElement("div");
+            div.style = `margin-bottom:15px; justify-content: space-between; display: flex; align-items: center; gap: 5px; user-select: none;`;
+
+            const minimizeLegendButton = document.createElement("div");
+            minimizeLegendButton.style = `cursor: pointer;`;
+            minimizeLegendButton.textContent = "🔽"
+            minimizeLegendButton.addEventListener("click", () => {
+                legendDiv.style.display = "none"
+                openLegendButtonDiv.style.display = "flex";
+            });
+
+
+            const label = document.createElement("label");
+            label.textContent = name;
+            label.htmlFor = "hide-all";
+            label.className = "hide-all";
+            label.style = `font-size: 14px;`;
+            label.style.cursor = "pointer";
+
+            const checkbox = document.createElement("input");
+            checkbox.id = "hide-all";
+            checkbox.type = "checkbox";
+            checkbox.checked = true;
+            checkbox.style.display = "none";
+            checkbox.addEventListener("change", () => {
+                if (typeof callback === "function") {
+                    callback(checkbox.checked);
+                }
+
+                const checked = checkbox.checked;
+                label.textContent = checked ? "Hide all" : "Show all";
+            });
+
+            div.appendChild(checkbox);
+            div.appendChild(label);
+            div.appendChild(minimizeLegendButton);
+
+            legendDiv.appendChild(div);
+
+            return {
+                checkbox,
+            }
+        }
+
     </script>
 
 </body>
