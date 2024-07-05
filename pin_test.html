@@ -213,6 +213,7 @@
             const spreadsheets = [
                 { color: "red", layerName: "defibrillators", name: "Defibrillators", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=989595694&single=true&output=csv", icon: "icons/aed-icon.svg" },
                 { color: "black", layerName: "cemeteries", name: "Cemeteries", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1362545516&single=true&output=csv", icon: "icons/grave-2-svgrepo-com.svg" },
+                { color: "DeepPink", layerName: "monuments", name: "Monuments", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1464952638&single=true&output=csv", icon: "icons/grave-2-svgrepo-com.svg" },
                 { color: "green", layerName: "parks_and_gardens", name: "Parks and Gardens", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1961951523&single=true&output=csv", icon: "icons/park-svgrepo-com.svg" },
                 { color: "gray", layerName: "public_toilets", name: "Public Toilets", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1160438668&single=true&output=csv", icon: "icons/public-toilet-svgrepo-com.svg" },
                 { color: "blue", layerName: "bike_racks", name: "Bike Racks", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=460361614&single=true&output=csv", icon: "icons/bicycle-parking-svgrepo-com.svg" },
@@ -239,6 +240,7 @@
             ).then(results => {
 
                 const cemeteriesData = results.find(result => result.name === "Cemeteries");
+                const monumentsData = results.find(result => result.name === "Monuments");
                 const cycleData = results.find(result => result.name === "Cycle Routes");
                 const defibrilatorsData = results.find(result => result.name === "Defibrillators");
                 const parksData = results.find(result => result.name === "Parks and Gardens");
@@ -328,6 +330,46 @@
                         name: cemeteriesData.name,
                         callback: (checked) => {
                             cemeteriesMarkers.forEach(marker => {
+                                marker.setMap(checked ? map : null);
+                            });
+                        }
+                    });
+
+                }
+
+                //----------------- Monuments -----------------
+                if (monumentsData) {
+                    console.log('monumentsData',monumentsData);
+                    const monumentsMarkers = monumentsData.data.map(pin => {
+                        const color = monumentsData.color;
+                        const title = "Monument";
+                        const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 200px; height: auto;">` : "";
+                        const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
+                        const infoWindowContent = `
+                            <div class="pin-container">
+                                <div class="description-container">
+                                    ${img}
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${pin.name}</div>
+                                        ${pin.description}
+                                        <div class="container-row">
+                                            ${website}
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+                        return buildMarker({ color, icon:"", pin, title: "", infoWindowContent })
+                    });
+
+                    allItems.push({
+                        legendLineHeight: "10px",
+                        color: monumentsData.color,
+                        name: monumentsData.name,
+                        callback: (checked) => {
+                            monumentsMarkers.forEach(marker => {
                                 marker.setMap(checked ? map : null);
                             });
                         }
