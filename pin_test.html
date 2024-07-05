@@ -54,7 +54,8 @@
             display: flex;
             gap: 10px;
             flex-direction: column;
-            min-width: 350px;
+            min-width: 200px;
+            width: fit-content;
         }
 
         .hide-all {
@@ -283,7 +284,7 @@
                     });
 
                     allItems.push({
-                        legendLineHeight: "10px",
+                        legendLineHeight: "12px",
                         color: bikeRacksData.color,
                         name: bikeRacksData.name,
                         callback: (checked) => {
@@ -301,7 +302,7 @@
                 if (cemeteriesData) {
                     const cemeteriesMarkers = cemeteriesData.data.map(pin => {
                         const color = cemeteriesData.color;
-                        const title = "Cemetery";
+                        const title = "Cemeteries";
                         const icon = cemeteriesData.icon;
                         const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 200px; height: auto;">` : "";
                         const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
@@ -325,7 +326,7 @@
                     });
 
                     allItems.push({
-                        legendLineHeight: "10px",
+                        legendLineHeight: "12px",
                         color: cemeteriesData.color,
                         name: cemeteriesData.name,
                         callback: (checked) => {
@@ -339,7 +340,7 @@
 
                 //----------------- Monuments -----------------
                 if (monumentsData) {
-                    console.log('monumentsData',monumentsData);
+                    console.log('monumentsData', monumentsData);
                     const monumentsMarkers = monumentsData.data.map(pin => {
                         const color = monumentsData.color;
                         const title = "Monument";
@@ -361,11 +362,11 @@
                                 </div>
                             </div>
                             `;
-                        return buildMarker({ color, icon:"", pin, title: "", infoWindowContent })
+                        return buildMarker({ color, icon: "", pin, title: "", infoWindowContent })
                     });
 
                     allItems.push({
-                        legendLineHeight: "10px",
+                        legendLineHeight: "12px",
                         color: monumentsData.color,
                         name: monumentsData.name,
                         callback: (checked) => {
@@ -398,7 +399,8 @@
                     cycleLayer.addGeoJson(cycleCollection);
                     cycleLayer.setStyle({
                         strokeColor: cycleDataColor,
-                        strokeWeight: 2
+                        strokeWeight: 2,
+                        clickable: false  // This disables interactivity
                     });
                     cycleLayer.setMap(map);
                     const cycleInfo = new google.maps.InfoWindow();
@@ -596,7 +598,7 @@
 
                     allItems.push({
                         border: "1px solid gray",
-                        legendLineHeight: "10px",
+                        legendLineHeight: "12px",
                         color: residentParkingZonesColor,
                         name: residentParkingData.name,
                         callback: (checked) => residentParkingLayer.setMap(checked ? map : null)
@@ -729,15 +731,17 @@
                 //----------------- Defibrillators -----------------
                 if (defibrilatorsData) {
                     const defibrilatorsMarkers = defibrilatorsData.data.map(pin => {
-                        const title = "Defibrillator";
+                        const title = "Defibrillators";
                         const icon = defibrilatorsData.icon;
                         const color = defibrilatorsData.color;
+                        const name = pin["name"];
 
                         const infoWindowContent = `
                               <div class="pin-container">
                                 <div class="description-container">
                                     <div class="pin-description">
                                         <div>${title}</div>
+                                        <div class="infobox-name">${name}</div>
                                         ${pin.address}
                                         <div class="container-row">
                                             <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
@@ -745,7 +749,7 @@
                                     </div>
                                 </div>
                             </div>
-                            `;
+                        `;
 
                         return buildMarker({ color, icon, pin, title: "", infoWindowContent })
                     });
@@ -756,7 +760,7 @@
                     // });
 
                     allItems.push({
-                        legendLineHeight: "10px",
+                        legendLineHeight: "12px",
                         color: defibrilatorsData.color,
                         name: defibrilatorsData.name,
                         callback: (checked) => {
@@ -795,7 +799,7 @@
                     });
 
                     allItems.push({
-                        legendLineHeight: "10px",
+                        legendLineHeight: "12px",
                         color: parksData.color,
                         name: parksData.name,
                         callback: (checked) => {
@@ -836,7 +840,7 @@
                     });
 
                     allItems.push({
-                        legendLineHeight: "10px",
+                        legendLineHeight: "12px",
                         color: publicToiletsData.color,
                         name: publicToiletsData.name,
                         callback: (checked) => {
@@ -916,11 +920,12 @@
 
         function addToLegend({ name, callback, color, legendLineHeight = "10px", border }) {
             const div = document.createElement("div");
-            div.style = `display: flex; align-items: center; gap: 5px`;
+            div.style = `display: flex; align-items: center; gap: 7px`;
 
             const checkbox = document.createElement("input");
             checkbox.type = "checkbox";
             checkbox.checked = true;
+            checkbox.id = name;
             checkbox.addEventListener("change", () => {
                 if (typeof callback === "function") {
                     callback(checkbox.checked);
@@ -928,12 +933,13 @@
             });
             const label = document.createElement("label");
             label.textContent = name;
-            label.style = `font-size: 14px;`;
+            label.htmlFor = name;
+            label.style = `font-size: 15px; cursor: pointer;`;
 
             const colorDiv = document.createElement("div");
             const height = legendLineHeight;
             const borderDiv = border ? border : "none";
-            colorDiv.style = `box-sizing: border-box; border:${borderDiv}; width: 10px; height: ${height}; background-color: ${color}; border-radius: 2px;`;
+            colorDiv.style = `box-sizing: border-box; border:${borderDiv}; width: 12px; height: ${height}; background-color: ${color}; border-radius: 2px;`;
 
             div.appendChild(checkbox);
             div.appendChild(colorDiv);
@@ -948,7 +954,7 @@
         function addToLegendToggleButton({ name, callback, color, type = "checkbox" }) {
 
             const div = document.createElement("div");
-            div.style = `justify-content: space-between; display: flex; align-items: center; gap: 5px; user-select: none;`;
+            div.style = `margin-bottom:15px; justify-content: space-between; display: flex; align-items: center; gap: 5px; user-select: none;`;
 
             const minimizeLegendButton = document.createElement("div");
             minimizeLegendButton.style = `cursor: pointer;`;
