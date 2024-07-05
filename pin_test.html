@@ -138,11 +138,12 @@
 
             //--------------------  HIDE ALL --------------------
             addToLegendToggleButton({
-                name: "Hide all", callback: (checked) => {
+                name: "Hide All", callback: (checked) => {
                     checkboxes.forEach(checkbox => {
                         // checkbox.checked = checked;
                         // checkbox.dispatchEvent(new Event("change"));
-                        checkbox.click()
+                        checked ? checkbox.checked = true : checkbox.checked = false;
+                        checkbox.dispatchEvent(new Event("change"));
                     });
                 }
             });
