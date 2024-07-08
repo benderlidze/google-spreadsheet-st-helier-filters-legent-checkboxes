@@ -65,6 +65,7 @@
             padding: 5px 20px;
             border-radius: 2px;
             color: white;
+            font-size: 14px;
         }
 
         .hide-all .active {
@@ -97,15 +98,9 @@
 
         #openLegendButton {
             z-index: 1000;
-            width: 40px;
-            height: 40px;
             position: absolute;
             bottom: 20px;
             left: 20px;
-            background-color: white;
-            padding: 5px;
-            border-radius: 100%;
-            cursor: pointer;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 
             display: flex;
@@ -113,6 +108,26 @@
             align-items: center;
             font-size: 20px;
 
+
+            cursor: pointer;
+            background-color: #0e69b4;
+            padding: 5px 20px;
+            border-radius: 2px;
+            color: white;
+            font-size: 14px;
+        }
+
+        table,
+        td,
+        th {
+            border: 1px solid rgb(207, 207, 207);
+            text-wrap: nowrap;
+            padding: 3px 5px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 50%;
         }
     </style>
 </head>
@@ -120,7 +135,7 @@
 <body>
 
     <div id="legend"></div>
-    <div id="openLegendButton">?</div>
+    <div id="openLegendButton">Show Legend</div>
     <div id="map"></div>
 
     <script>
@@ -223,6 +238,7 @@
                 { color: "yellow", layerName: "resident_parking_zones", name: "Resident Parking Zones", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=230637395&single=true&output=csv" },
                 { color: "blue", layerName: "st_helier_maintained_roads", name: "St Helier Maintained Roads", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=377968935&single=true&output=csv" },
                 { color: "green", layerName: "cycle_routes", name: "Cycle Routes", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1767825220&single=true&output=csv" },
+                { color: "#FF8C00", layerName: "recycling_centres", name: "Recycling Centres", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1571611143&single=true&output=csv" },
             ]
 
             //https://developers.google.com/maps/documentation/javascript/reference/info-window#InfoWindowOptions
@@ -247,6 +263,7 @@
                 const parksData = results.find(result => result.name === "Parks and Gardens");
                 const publicToiletsData = results.find(result => result.name === "Public Toilets");
                 const bikeRacksData = results.find(result => result.name === "Bike Racks");
+                const recyclingCentresData = results.find(result => result.name === "Recycling Centres");
                 const disabledPrakingSpacesData = results.find(result => result.name === "Disabled Parking Spaces");
                 const unloadingBaysData = results.find(result => result.name === "Unloading Bays");
                 const residentParkingData = results.find(result => result.name === "Resident Parking Zones");
@@ -296,6 +313,75 @@
 
 
 
+                }
+                //----------------- recyclingCentresData -----------------
+                if (recyclingCentresData) {
+                    const recyclingCentres = recyclingCentresData.data.map(pin => {
+                        const color = recyclingCentresData.color;
+                        const title = "Recycling Centres";
+                        const icon = recyclingCentresData.icon;
+                        const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
+                        const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
+
+                        const infoWindowContent = `
+                              <div class="pin-container">
+                                <div class="description-container">
+                                    ${img}
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${pin.name}</div>
+                                            <table>
+                                                <tr>
+                                                    <td>batteries</td>
+                                                    <td>${pin['batteries']}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>batteries (in store)</td>
+                                                    <td>${pin['batteries (in store)']}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>mixed textiles and clothes</td>
+                                                    <td>${pin['mixed textiles and clothes']}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>metal packaging</td>
+                                                    <td>${pin['metal packaging']}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>metal packaging (drink cans only)</td>
+                                                    <td>${pin['metal packaging (drink cans only)']}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>paper</td>
+                                                    <td>${pin['paper']}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>plastic bottles</td>
+                                                    <td>${pin['plastic bottles']}</td>
+                                                </tr>
+                                            </table>
+                                        <div class="container-row">
+                                            ${website}
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+
+                        return buildMarker({ color, icon, pin, title: "", infoWindowContent })
+                    });
+
+                    allItems.push({
+                        legendLineHeight: "12px",
+                        color: recyclingCentresData.color,
+                        name: recyclingCentresData.name,
+                        callback: (checked) => {
+                            recyclingCentres.forEach(marker => {
+                                marker.setMap(checked ? map : null);
+                            });
+                        }
+                    });
                 }
 
                 //----------------- Cemeteries -----------------
@@ -957,8 +1043,9 @@
             div.style = `margin-bottom:15px; justify-content: space-between; display: flex; align-items: center; gap: 5px; user-select: none;`;
 
             const minimizeLegendButton = document.createElement("div");
-            minimizeLegendButton.style = `cursor: pointer;`;
-            minimizeLegendButton.textContent = "🔽"
+            minimizeLegendButton.className = `hide-all`;
+            minimizeLegendButton.textContent = "Hide Legend";
+
             minimizeLegendButton.addEventListener("click", () => {
                 legendDiv.style.display = "none"
                 openLegendButtonDiv.style.display = "flex";
@@ -983,7 +1070,7 @@
                 }
 
                 const checked = checkbox.checked;
-                label.textContent = checked ? "Hide all" : "Show all";
+                label.textContent = checked ? "Hide All" : "Show All";
             });
 
             div.appendChild(checkbox);
