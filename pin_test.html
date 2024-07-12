@@ -66,6 +66,14 @@
             width: fit-content;
         }
 
+        .close-legend {
+            cursor: pointer;
+            font-size: 30px;
+            position: absolute;
+            top: 0px;
+            right: 10px
+        }
+
         .hide-all {
             cursor: pointer;
             /* border: 1px solid #0e69b4; */
@@ -1035,8 +1043,9 @@
             div.style = `margin-bottom:15px; justify-content: space-between; display: flex; align-items: center; gap: 5px; user-select: none;`;
 
             const minimizeLegendButton = document.createElement("div");
-            minimizeLegendButton.className = `hide-all`;
-            minimizeLegendButton.textContent = "Hide Legend";
+            minimizeLegendButton.className = `close-legend`;
+            minimizeLegendButton.innerHTML = "&times;";
+
 
             minimizeLegendButton.addEventListener("click", () => {
                 legendDiv.style.display = "none"
