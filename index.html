@@ -2,8 +2,16 @@
 <html>
 
 <head>
-    <title>Marker</title>
+    <title>Interactive map of St Helier, Jersey</title>
+    <meta name="description"
+        content="A detailed, user-friendly map of St Helier, Jersey, showcasing various points of interest like bike racks, cemeteries, cycle routes, defibrillators, disabled parking spaces etc.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:image"
+        content="https://sthelier.je/wp-content/uploads/sites/14/2023/02/Parish-of-St-Helier-opengraph.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="675" />
+    <meta property="og:image:type" content="image/jpeg" />
+
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
     <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -41,7 +49,8 @@
         }
 
         .pin-description {
-            max-width: 400px;
+            max-width: 240px;
+            line-height: 1.3;
         }
 
         .description-container {
@@ -56,6 +65,14 @@
             flex-direction: column;
             min-width: 200px;
             width: fit-content;
+        }
+
+        .close-legend {
+            cursor: pointer;
+            font-size: 30px;
+            position: absolute;
+            top: 0px;
+            right: 10px
         }
 
         .hide-all {
@@ -166,6 +183,7 @@
         const urlQuery = new URLSearchParams(window.location.search);
         const showLegend = urlQuery.get("legend") === "n" ? false : true;
         const showLayers = urlQuery.get("layers") !== null ? urlQuery.get("layers").split(",").map(i => i.toLowerCase().trim()) : [];
+        const isLegendOpened = urlQuery.get("legend-open") === "y" ? true : false;
 
         const legendDiv = document.getElementById("legend");
         const openLegendButtonDiv = document.getElementById("openLegendButton");
@@ -174,7 +192,10 @@
             openLegendButtonDiv.style.display = "none";
         });
         openLegendButtonDiv.style.display = showLegend ? "flex" : "none";
-
+        if (isLegendOpened) {
+            legendDiv.style.display = "block";
+            openLegendButtonDiv.style.display = "none";
+        }
 
         async function initMap() {
 
@@ -323,6 +344,15 @@
                         const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
                         const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
 
+
+                        const recycledFields = ['batteries', 'batteries (in store)', 'mixed textiles and clothes', 'metal packaging', 'metal packaging (drink cans only)', 'paper', 'plastic bottles']
+
+                        const recycledItems = recycledFields.map(field => {
+                            if (pin[field] && pin[field] !== "") {
+                                return field
+                            }
+                        }).filter(item => item).join(", ")
+
                         const infoWindowContent = `
                               <div class="pin-container">
                                 <div class="description-container">
@@ -330,36 +360,7 @@
                                     <div class="pin-description">
                                         <div>${title}</div>
                                         <div class="infobox-name">${pin.name}</div>
-                                            <table>
-                                                <tr>
-                                                    <td>batteries</td>
-                                                    <td>${pin['batteries']}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>batteries (in store)</td>
-                                                    <td>${pin['batteries (in store)']}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>mixed textiles and clothes</td>
-                                                    <td>${pin['mixed textiles and clothes']}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>metal packaging</td>
-                                                    <td>${pin['metal packaging']}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>metal packaging (drink cans only)</td>
-                                                    <td>${pin['metal packaging (drink cans only)']}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>paper</td>
-                                                    <td>${pin['paper']}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>plastic bottles</td>
-                                                    <td>${pin['plastic bottles']}</td>
-                                                </tr>
-                                            </table>
+                                        <strong>Type of material recycled:</strong> ${recycledItems}
                                         <div class="container-row">
                                             ${website}
                                             <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
@@ -429,7 +430,7 @@
                     console.log('monumentsData', monumentsData);
                     const monumentsMarkers = monumentsData.data.map(pin => {
                         const color = monumentsData.color;
-                        const title = "Monument";
+                        const title = "Monuments";
                         const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 200px; height: auto;">` : "";
                         const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
                         const infoWindowContent = `
@@ -661,13 +662,13 @@
                                 <div class="pin-description">
                                     <div>${title}</div>
                                     <div class="infobox-name">${name}</div>
-                                    <div><strong>residents spaces</strong> ${resSpaces}</div>
-                                    <div><strong>visitors spaces</strong> ${visSpaces}</div>
-                                    <div><strong>disabled parking spaces</strong> ${disSpaces}</div>
-                                    <div><strong>unloading bays</strong> ${unldSpaces}</div>
-                                    <div><strong>doctors spaces</strong> ${docSpaces}</div>
-                                    <div><strong>motorcycles spaces</strong> ${motoSpaces}</div>
-                                    <div><strong>bicycles spaces</strong> ${bicSpaces}</div>
+                                    <div><strong>Residents spaces</strong> ${resSpaces}</div>
+                                    <div><strong>Visitors spaces</strong> ${visSpaces}</div>
+                                    <div><strong>Disabled parking spaces</strong> ${disSpaces}</div>
+                                    <div><strong>Unloading bays</strong> ${unldSpaces}</div>
+                                    <div><strong>Doctors spaces</strong> ${docSpaces}</div>
+                                    <div><strong>Motorcycles spaces</strong> ${motoSpaces}</div>
+                                    <div><strong>Bicycles spaces</strong> ${bicSpaces}</div>
                                 </div>
                             </div>
                         </div>
@@ -1043,8 +1044,9 @@
             div.style = `margin-bottom:15px; justify-content: space-between; display: flex; align-items: center; gap: 5px; user-select: none;`;
 
             const minimizeLegendButton = document.createElement("div");
-            minimizeLegendButton.className = `hide-all`;
-            minimizeLegendButton.textContent = "Hide Legend";
+            minimizeLegendButton.className = `close-legend`;
+            minimizeLegendButton.innerHTML = "&times;";
+
 
             minimizeLegendButton.addEventListener("click", () => {
                 legendDiv.style.display = "none"
