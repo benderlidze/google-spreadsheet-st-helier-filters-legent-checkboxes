@@ -183,9 +183,14 @@
         const urlQuery = new URLSearchParams(window.location.search);
         const showLegend = urlQuery.get("legend") === "n" ? false : true;
         const showLayers = urlQuery.get("layers") !== null ? urlQuery.get("layers").split(",").map(i => i.toLowerCase().trim()) : [];
-        const isLegendOpened = urlQuery.get("legend-open") === "y" ? true : false;
+
+        const openLegendQuery = urlQuery.get("legend-open")
+        const isLegendOpened = openLegendQuery !== null
+            ? urlQuery.get("legend-open") === "y" ? true : false
+            : true
 
         const legendDiv = document.getElementById("legend");
+
         const openLegendButtonDiv = document.getElementById("openLegendButton");
         openLegendButtonDiv.addEventListener("click", () => {
             legendDiv.style.display = "block";
