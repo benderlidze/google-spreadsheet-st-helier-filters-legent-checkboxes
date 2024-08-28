@@ -265,6 +265,9 @@
                 { color: "blue", layerName: "st_helier_maintained_roads", name: "St Helier Maintained Roads", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=377968935&single=true&output=csv" },
                 { color: "green", layerName: "cycle_routes", name: "Cycle Routes", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1767825220&single=true&output=csv" },
                 { color: "#FF8C00", layerName: "recycling_centres", name: "Recycling Centres", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0kojLY0DW7hrqrF8q6SqtUx8gxOHg92vMUqw0-jSYennAGu25lGQDPPLWI_hkt63zKQQUV5N_PHCr/pub?gid=1571611143&single=true&output=csv" },
+
+                { color: "purple", layerName: "car_parks", name: "Car Parks", url: "https://docs.google.com/spreadsheets/d/1_jIzVzLFLwbRYRgsLM2CyOSRq72Z4MWZAgOckEzCdeA/pub?gid=1776921069&single=true&output=csv", icon: "icons/bicycle-parking-svgrepo-com.svg" },
+
             ]
 
             //https://developers.google.com/maps/documentation/javascript/reference/info-window#InfoWindowOptions
@@ -295,6 +298,7 @@
                 const residentParkingData = results.find(result => result.name === "Resident Parking Zones");
                 const roadsData = results.find(result => result.name === "St Helier Maintained Roads");
 
+                const carParksData = results.find(result => result.name === "Car Parks");
                 //----------------- Bike Racks -----------------
                 if (bikeRacksData) {
                     const bikeRacks = bikeRacksData.data.map(pin => {
@@ -336,9 +340,47 @@
                             });
                         }
                     });
+                }
+                //----------------- carParksData -----------------
+                if (carParksData) {
+                    console.log('carParksData', carParksData);
+                    const carParks = carParksData.data.map(pin => {
+                        const color = carParksData.color;
+                        const title = "Car Parks";
+                        const icon = carParksData.icon;
+                        const img = pin["image url"] ? `<img src="${pin["image url"]}" style="width: 100px; height: 100px;">` : "";
+                        const website = pin["website url"] ? `<div><a href="${pin['website url']}" target="_blank">more details</a></div>` : "";
 
+                        const infoWindowContent = `
+                              <div class="pin-container">
+                                <div class="description-container">
+                                    ${img}
+                                    <div class="pin-description">
+                                        <div>${title}</div>
+                                        <div class="infobox-name">${pin.name}</div>
+                                            <b>Total number of spaces:</b> ${pin['total number of spaces']}<br>
+                                        <div class="container-row">
+                                            ${website}
+                                            <a href="https://www.google.com/maps/dir/?api=1&destination=${pin.latitude},${pin.longitude}" target="_blank">directions</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
 
+                        return buildMarker({ color, icon, pin, title: "", infoWindowContent })
+                    });
 
+                    allItems.push({
+                        legendLineHeight: "12px",
+                        color: carParksData.color,
+                        name: carParksData.name,
+                        callback: (checked) => {
+                            carParks.forEach(marker => {
+                                marker.setMap(checked ? map : null);
+                            });
+                        }
+                    });
                 }
                 //----------------- recyclingCentresData -----------------
                 if (recyclingCentresData) {
